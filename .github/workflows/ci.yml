@@ -1,0 +1,57 @@
+name: AetherLake CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aetherlake-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Validate shell
+        run: shellcheck scripts/*.sh tests/*.sh docker/*/*.sh
+      - name: Validate Compose
+        run: cp .env.example .env && docker compose config --quiet
+
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure environment
+        run: cp .env.example .env
+      - name: Build pinned pg_lake and AetherLake images
+        run: ./scripts/build-images.sh
+      - name: Start clean stack
+        run: docker compose up -d && ./scripts/wait-healthy.sh 600
+      - name: Run smoke suite
+        run: ./tests/smoke.sh
+      - name: Run object-storage failure suite
+        run: ./tests/storage-failure.sh
+      - name: Verify restart persistence
+        run: docker compose restart && ./scripts/wait-healthy.sh 300 && ./tests/smoke.sh
+      - name: Collect diagnostics
+        if: always()
+        run: docker compose ps && docker compose logs --no-color > aetherlake-ci.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aetherlake-ci-logs
+          path: aetherlake-ci.log
+          retention-days: 7
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+

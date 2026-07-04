@@ -5,7 +5,7 @@
 ---
 
 ## 1. Executive Summary & Core Objective
-Project **AetherLake** aims to decouple operational database engines from heavy analytical processing by establishing a unified, shared-storage data lakehouse layer. By leveraging the open-source `pg_lake` extension (which embeds a vectorized DuckDB execution engine inside PostgreSQL) alongside **Apache Iceberg**, this project establishes a single source of truth in cloud object storage (e.g., AWS S3). 
+Project **AetherLake** aims to decouple operational database engines from heavy analytical processing by establishing a unified, shared-storage data lakehouse layer. By leveraging the open-source `pg_lake` extension (which delegates vectorized execution to the separate `pgduck_server` process over a local Unix socket) alongside **Apache Iceberg**, this project establishes a single source of truth in cloud object storage (e.g., AWS S3).
 
 Operational applications write directly to Postgres with full ACID transactional reliability. Simultaneously, downstream analytical platforms (e.g., Snowflake, Databricks, Apache Spark) consume the exact same underlying Iceberg/Parquet metadata files natively without requiring brittle, expensive, high-maintenance Extract-Transform-Load (ETL) pipelines or traditional Change Data Capture (CDC) replication agents.
 
@@ -58,7 +58,7 @@ Operational applications write directly to Postgres with full ACID transactional
 
 ### High-Level Components:
 1. **PostgreSQL & Routing Engine:** Acts as the transactional gatekeeper. It parses incoming SQL queries and determines whether a table resides in local heap storage or external object storage.
-2. **pg_lake Extension Stack:** Decouples storage and compute. It utilizes `pg_lake_iceberg` for table catalog management and routes heavy analytical execution paths to `pgduck_server` (an embedded vectorized DuckDB process).
+2. **pg_lake Extension Stack:** Decouples storage and compute. It utilizes `pg_lake_iceberg` for table catalog management and routes heavy analytical execution paths to `pgduck_server` (a separate vectorized DuckDB sidecar process).
 3. **Unified Object Storage:** Standardized S3 bucket organization containing Apache Iceberg structures (metadata logs, manifest lists, manifest files, and data files formatted in Parquet).
 4. **Downstream Consumers:** External engines attached via external catalogs to run multi-engine queries on identical point-in-time snapshots.
 

@@ -1,0 +1,112 @@
+name: aetherlake
+
+x-storage-env: &storage-env
+  AWS_REGION: ${AWS_REGION:-us-east-1}
+  AWS_DEFAULT_REGION: ${AWS_REGION:-us-east-1}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-aetherlake}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-change-me-minio-local-only}
+  S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+  S3_BUCKET: ${S3_BUCKET:-aetherlake}
+  S3_PREFIX: ${S3_PREFIX:-warehouse}
+  S3_PATH_STYLE: ${S3_PATH_STYLE:-true}
+  S3_USE_SSL: ${S3_USE_SSL:-false}
+
+services:
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-aetherlake}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me-minio-local-only}
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-aetherlake}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me-minio-local-only}
+      S3_BUCKET: ${S3_BUCKET:-aetherlake}
+    entrypoint: ["/bin/sh", "/init-minio.sh"]
+    volumes:
+      - ./docker/minio/init-minio.sh:/init-minio.sh:ro
+    restart: "no"
+
+  pgduck:
+    image: aetherlake/pgduck:${PG_LAKE_REF:-01c529dedde75777e09298ae41786d9ae1f337cf}
+    build:
+      context: .
+      target: pgduck
+      args:
+        PGDUCK_IMAGE: ${PGDUCK_IMAGE:-aetherlake/pgduck-server:01c529d}
+    environment:
+      <<: *storage-env
+      PG_MAJOR: ${PG_MAJOR:-18}
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+    volumes:
+      - pgduck-socket:/home/postgres/pgduck_socket_dir
+      - pg-shared-tmp:/home/postgres/pgsql-${PG_MAJOR:-18}/data/base/pgsql_tmp
+      - pgduck-cache:/home/postgres/cache
+    healthcheck:
+      test: ["CMD", "psql", "-p", "5332", "-h", "/home/postgres/pgduck_socket_dir", "-c", "SELECT 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  postgres:
+    image: aetherlake/postgres:${PG_LAKE_REF:-01c529dedde75777e09298ae41786d9ae1f337cf}
+    build:
+      context: .
+      target: postgres
+      args:
+        PG_LAKE_POSTGRES_IMAGE: ${PG_LAKE_POSTGRES_IMAGE:-aetherlake/pg-lake-postgres:01c529d}
+    environment:
+      <<: *storage-env
+      PG_MAJOR: ${PG_MAJOR:-18}
+      POSTGRES_DB: ${POSTGRES_DB:-aetherlake}
+      POSTGRES_USER: ${POSTGRES_USER:-aetherlake_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local-only}
+      APP_USER: ${APP_USER:-aetherlake_app}
+      APP_PASSWORD: ${APP_PASSWORD:-change-me-app-local-only}
+      DELTA_CRON: ${DELTA_CRON:-*/5 * * * *}
+      VACUUM_CRON: ${VACUUM_CRON:-17 * * * *}
+      DELTA_BATCH_SIZE: ${DELTA_BATCH_SIZE:-10000}
+    depends_on:
+      pgduck:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/home/postgres/pgsql-${PG_MAJOR:-18}/data
+      - pgduck-socket:/home/postgres/pgduck_socket_dir
+      - pg-shared-tmp:/home/postgres/pgsql-${PG_MAJOR:-18}/data/base/pgsql_tmp
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U $${POSTGRES_USER} -d $${POSTGRES_DB} -Atqc \"SELECT aetherlake.healthcheck()\" | grep -qx true"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  minio-data:
+  postgres-data:
+  pgduck-socket:
+  pg-shared-tmp:
+  pgduck-cache:
+

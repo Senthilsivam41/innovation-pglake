@@ -1,0 +1,36 @@
+diff --git a/docker/Dockerfile b/docker/Dockerfile
+index b1909de..b5408fd 100644
+--- a/docker/Dockerfile
++++ b/docker/Dockerfile
+@@ -265,9 +265,14 @@ ENV VCPKG_TOOLCHAIN_PATH="/home/postgres/vcpkg/scripts/buildsystems/vcpkg.cmake"
+ ############## base image for pg_lake_postgres and pgduck_server ##############
+ FROM dev_base AS base
+ 
++ARG PG_LAKE_REF
++
+ # Clone pg_lake project
+-RUN git clone https://github.com/snowflake-labs/pg_lake.git \
+-    --branch ${PG_LAKE_REF} --recurse-submodules /home/postgres/pg_lake
++RUN git clone --filter=blob:none --no-checkout https://github.com/snowflake-labs/pg_lake.git /home/postgres/pg_lake && \
++    cd /home/postgres/pg_lake && \
++    git fetch --depth 1 origin ${PG_LAKE_REF} && \
++    git checkout --detach FETCH_HEAD && \
++    git submodule update --init --recursive --depth 1
+ 
+ ############## pg_lake_builder - Build all pg_lake extensions ##############
+ FROM base AS pg_lake_builder
+@@ -289,12 +294,13 @@ FROM base AS pgduck_builder
+ # need to redefine ARGs in each stage
+ ARG PG_MAJOR=18
+ ARG PGCOMPAT_BUILD_CONFIG=Release
++ARG PG_LAKE_BUILD_JOBS=2
+ 
+ # Set environment variables for the selected PostgreSQL version
+ ENV PG_MAJOR=${PG_MAJOR}
+ ENV PATH=/home/postgres/pgsql-${PG_MAJOR}/bin:$PATH
+ 
+ # Install pgduck_server (build happens here, not in final image)
+ RUN cd pg_lake && \
+-    make install-pgduck_server && \
++    make NCORES=${PG_LAKE_BUILD_JOBS} install-pgduck_server && \
+     rm -r duckdb_pglake/build
