@@ -24,6 +24,8 @@ jobs:
         run: shellcheck scripts/*.sh tests/*.sh docker/*/*.sh
       - name: Validate Compose
         run: cp .env.example .env && docker compose config --quiet
+      - name: Validate demo application
+        run: python -m py_compile demo-ui/app.py
 
   integration:
     runs-on: ubuntu-24.04
@@ -54,4 +56,3 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose down --volumes --remove-orphans
-

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Project AetherLake stakeholder demonstration">
+  <title>AetherLake · Shared storage, zero ETL</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="aurora aurora-one"></div>
+  <div class="aurora aurora-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="AetherLake home">
+      <span class="brand-mark"><i></i><i></i><i></i></span>
+      <span>Project <strong>AetherLake</strong></span>
+    </a>
+    <div class="live-state"><span class="pulse"></span><span id="liveLabel">Connecting to lakehouse</span></div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="eyebrow">POSTGRESQL × APACHE ICEBERG × OBJECT STORAGE</div>
+      <h1>Write once.<br><span>Analyze everywhere.</span></h1>
+      <p class="hero-copy">A zero-ETL shared-storage foundation where PostgreSQL commits transactional data directly into open Iceberg tables—ready for every analytical engine.</p>
+      <div class="hero-actions">
+        <button class="button primary" data-scroll="demo">Run the live demo <span>→</span></button>
+        <a class="button secondary" href="{{ minio_console }}" target="_blank" rel="noreferrer">Inspect object storage ↗</a>
+      </div>
+    </section>
+
+    <section class="flow" aria-label="Architecture data flow">
+      <article class="node">
+        <span class="node-number">01</span><div><small>TRANSACTION LAYER</small><h2>PostgreSQL</h2><p>One familiar SQL endpoint</p></div>
+      </article>
+      <div class="connector"><span></span><b>ACID COMMIT</b></div>
+      <article class="node accent-node">
+        <span class="node-number">02</span><div><small>OPEN TABLE FORMAT</small><h2>Apache Iceberg</h2><p>Snapshots, metadata & schema</p></div>
+      </article>
+      <div class="connector"><span></span><b>SHARED DATA</b></div>
+      <article class="node">
+        <span class="node-number">03</span><div><small>ANALYTICAL COMPUTE</small><h2>Any engine</h2><p>DuckDB, Spark, Databricks</p></div>
+      </article>
+    </section>
+
+    <section class="metrics" aria-label="Live platform metrics">
+      <article><small>ICEBERG EVENTS</small><strong id="eventCount">—</strong><span>canonical rows</span></article>
+      <article><small>HISTORY SNAPSHOT</small><strong id="historyCount">—</strong><span>archived rows</span></article>
+      <article><small>MANAGED TABLES</small><strong id="tableCount">—</strong><span>open Iceberg format</span></article>
+      <article><small>QUERY RESPONSE</small><strong><span id="queryMs">—</span><em> ms</em></strong><span>live from PostgreSQL</span></article>
+    </section>
+
+    <section class="demo-section" id="demo">
+      <div class="section-heading">
+        <div><div class="eyebrow">LIVE TRANSACTION</div><h2>Watch one write travel the lakehouse.</h2></div>
+        <p>Submit an event through PostgreSQL. The same transaction writes Parquet and advances the Iceberg metadata pointer in MinIO.</p>
+      </div>
+
+      <div class="demo-grid">
+        <form class="event-form panel" id="eventForm">
+          <div class="panel-title"><span class="terminal-dots"><i></i><i></i><i></i></span><span>new_event.sql</span></div>
+          <label>Tenant ID<input name="tenant_id" type="number" value="1001" required></label>
+          <label>Event type<input name="event_type" value="stakeholder.demo" maxlength="120" required></label>
+          <label>Payload message<textarea name="message" rows="3" maxlength="500">AetherLake writes this event directly to shared Iceberg storage.</textarea></label>
+          <button class="button primary full" type="submit"><span id="submitLabel">Commit Iceberg transaction</span><span>⌁</span></button>
+          <div class="commit-result" id="commitResult" aria-live="polite"></div>
+        </form>
+
+        <div class="panel event-panel">
+          <div class="panel-title"><span>Recent events</span><button class="text-button" id="refreshButton">Refresh ↻</button></div>
+          <div class="event-list" id="eventList"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="proof-section">
+      <div class="section-heading compact">
+        <div><div class="eyebrow">OPEN BY DESIGN</div><h2>Proof, not promises.</h2></div>
+        <button class="button secondary" id="syncButton">Run historical delta</button>
+      </div>
+      <div class="proof-grid">
+        <article class="panel proof-card"><small>CATALOG POINTERS</small><div id="catalogList" class="code-list"></div></article>
+        <article class="panel proof-card"><small>ACTIVE EXTENSIONS</small><div id="extensionList" class="tag-list"></div></article>
+        <article class="panel proof-card"><small>AUTOMATED OPERATIONS</small><div id="jobList" class="job-list"></div></article>
+      </div>
+    </section>
+
+    <section class="value-strip">
+      <p>One copy of data.</p><p>No brittle replication.</p><p>Open analytical access.</p>
+    </section>
+  </main>
+
+  <footer><span>Project AetherLake · Open-source shared storage</span><code>s3://{{ bucket }}/{{ prefix }}/</code></footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

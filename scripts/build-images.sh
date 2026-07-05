@@ -32,6 +32,11 @@ if [[ "$actual_ref" != "$PG_LAKE_REF" ]]; then
   exit 1
 fi
 
+# Make the project-owned compatibility patch available inside the upstream
+# Docker build context. It is applied only to the pinned source checkout.
+cp "$root/docker/upstream-spatial-optional.patch" \
+  "$source_dir/docker/aetherlake-spatial-optional.patch"
+
 # Upstream's Dockerfile clones its source a second time from `main`. Apply a
 # narrow patch so the inner build uses the same immutable commit as this cache.
 if git -C "$source_dir" apply --check "$root/docker/upstream-pinned-ref.patch"; then

@@ -54,6 +54,9 @@ services:
     environment:
       <<: *storage-env
       PG_MAJOR: ${PG_MAJOR:-18}
+      PGDATABASE: ${POSTGRES_DB:-aetherlake}
+      PGUSER: ${POSTGRES_USER:-aetherlake_admin}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-change-me-local-only}
     depends_on:
       minio-init:
         condition: service_completed_successfully
@@ -62,7 +65,7 @@ services:
       - pg-shared-tmp:/home/postgres/pgsql-${PG_MAJOR:-18}/data/base/pgsql_tmp
       - pgduck-cache:/home/postgres/cache
     healthcheck:
-      test: ["CMD", "psql", "-p", "5332", "-h", "/home/postgres/pgduck_socket_dir", "-c", "SELECT 1"]
+      test: ["CMD-SHELL", "psql -p 5332 -h /home/postgres/pgduck_socket_dir -Atqc \"SELECT 1\" | grep -qx 1"]
       interval: 5s
       timeout: 3s
       retries: 30
@@ -96,10 +99,35 @@ services:
       - pgduck-socket:/home/postgres/pgduck_socket_dir
       - pg-shared-tmp:/home/postgres/pgsql-${PG_MAJOR:-18}/data/base/pgsql_tmp
     healthcheck:
-      test: ["CMD-SHELL", "psql -U $${POSTGRES_USER} -d $${POSTGRES_DB} -Atqc \"SELECT aetherlake.healthcheck()\" | grep -qx true"]
+      test: ["CMD-SHELL", "psql -U $${POSTGRES_USER} -d $${POSTGRES_DB} -Atqc \"SELECT aetherlake.healthcheck()\" | grep -qx t"]
       interval: 10s
       timeout: 5s
       start_period: 20s
+      retries: 20
+    restart: unless-stopped
+
+  demo-ui:
+    image: aetherlake/demo-ui:local
+    build:
+      context: demo-ui
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-aetherlake}
+      PGUSER: ${POSTGRES_USER:-aetherlake_admin}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-change-me-local-only}
+      S3_BUCKET: ${S3_BUCKET:-aetherlake}
+      S3_PREFIX: ${S3_PREFIX:-warehouse}
+      MINIO_CONSOLE_URL: http://localhost:${MINIO_CONSOLE_PORT:-9001}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${DEMO_UI_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')"]
+      interval: 5s
+      timeout: 3s
       retries: 20
     restart: unless-stopped
 
@@ -109,4 +137,3 @@ volumes:
   pgduck-socket:
   pg-shared-tmp:
   pgduck-cache:
-
