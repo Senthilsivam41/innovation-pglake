@@ -62,6 +62,8 @@ $$;
 SQL
 
 docker compose exec -T pgduck psql -p 5332 -h /home/postgres/pgduck_socket_dir -Atqc "SELECT 1" | grep -qx 1
+docker compose exec -T demo-ui python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')"
+docker compose exec -T demo-ui python -c "import urllib.request; assert urllib.request.urlopen('http://localhost:8080/api/overview').status == 200"
 
 object_count=$(docker compose run --rm --no-deps --entrypoint sh minio-init -c \
   'mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null && mc find "local/$S3_BUCKET" --name "*.parquet" | wc -l')

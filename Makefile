@@ -1,4 +1,4 @@
-.PHONY: bootstrap build up down reset wait test test-failure logs config
+.PHONY: bootstrap build demo up down reset wait test test-failure logs config
 
 bootstrap:
 	@test -f .env || cp .env.example .env
@@ -6,6 +6,9 @@ bootstrap:
 
 build:
 	./scripts/build-images.sh
+
+demo:
+	./scripts/demo.sh
 
 up:
 	docker compose up -d
@@ -27,8 +30,7 @@ test-failure:
 	./tests/storage-failure.sh
 
 logs:
-	docker compose logs -f postgres pgduck minio
+	docker compose logs -f postgres pgduck minio demo-ui
 
 config:
 	docker compose config --quiet
-

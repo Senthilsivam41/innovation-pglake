@@ -1,0 +1,26 @@
+diff --git a/pgduck_server/src/duckdb/duckdb.c b/pgduck_server/src/duckdb/duckdb.c
+index 5bb74f0..aa2e23c 100644
+--- a/pgduck_server/src/duckdb/duckdb.c
++++ b/pgduck_server/src/duckdb/duckdb.c
+@@ -274,11 +274,17 @@ duckdb_global_init(char *databaseFilePath,
+ 	/*
+ 	 * spatial is not a built-in module and does not work to be autoinstalled
++	 * for every custom DuckDB build/platform. Spatial support is optional for
++	 * non-geospatial pg_lake workloads, so do not make server availability
++	 * depend on the public extension repository.
+ 	 */
+ 	if (allowExtensionInstall && run_command_on_duckdb("INSTALL spatial") == DuckDBError)
+-		return DUCKDB_INITIALIZATION_ERROR;
+-
+-	if (run_command_on_duckdb("LOAD spatial") == DuckDBError)
+-		return DUCKDB_INITIALIZATION_ERROR;
++	{
++		PGDUCK_SERVER_WARN("spatial extension is unavailable; continuing without geospatial support");
++	}
++	else if (run_command_on_duckdb("LOAD spatial") == DuckDBError)
++	{
++		PGDUCK_SERVER_WARN("spatial extension could not be loaded; continuing without geospatial support");
++	}
+ 
+ #if PG_LAKE_DELTA_SUPPORT == 1
+ 

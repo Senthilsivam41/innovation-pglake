@@ -19,7 +19,12 @@ index b1909de..b5408fd 100644
  
  ############## pg_lake_builder - Build all pg_lake extensions ##############
  FROM base AS pg_lake_builder
-@@ -289,12 +294,13 @@ FROM base AS pgduck_builder
+@@ -286,15 +291,21 @@ RUN cd pg_lake && \
+ ############## pgduck_builder - Build duckdb_pglake and pgduck_server ##############
+ FROM base AS pgduck_builder
++COPY docker/aetherlake-spatial-optional.patch /tmp/aetherlake-spatial-optional.patch
+-
++
  # need to redefine ARGs in each stage
  ARG PG_MAJOR=18
  ARG PGCOMPAT_BUILD_CONFIG=Release
@@ -32,5 +37,9 @@ index b1909de..b5408fd 100644
  # Install pgduck_server (build happens here, not in final image)
  RUN cd pg_lake && \
 -    make install-pgduck_server && \
-+    make NCORES=${PG_LAKE_BUILD_JOBS} install-pgduck_server && \
++    make NCORES=${PG_LAKE_BUILD_JOBS} install-duckdb_pglake
++
++RUN cd pg_lake && \
++    git apply /tmp/aetherlake-spatial-optional.patch && \
++    make -C pgduck_server install && \
      rm -r duckdb_pglake/build

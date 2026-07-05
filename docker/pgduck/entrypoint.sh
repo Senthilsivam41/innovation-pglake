@@ -19,8 +19,9 @@ endpoint_host=${endpoint_host#https://}
 url_style=vhost
 [[ "$S3_PATH_STYLE" == "true" ]] && url_style=path
 
-mkdir -p "$socket_dir" "$tmp_dir" "$base/cache"
-chmod 0700 "$socket_dir" "$tmp_dir" "$base/cache"
+sudo mkdir -p "$socket_dir" "$tmp_dir" "$base/cache"
+sudo chown -R postgres:postgres "$socket_dir" "$tmp_dir" "$base/cache"
+sudo chmod 0700 "$socket_dir" "$tmp_dir" "$base/cache"
 
 sed \
   -e "s|__S3_BUCKET__|$S3_BUCKET|g" \
@@ -39,4 +40,3 @@ exec "$base/pgsql-$PG_MAJOR/bin/pgduck_server" \
   --unix_socket_group postgres \
   --port 5332 \
   --init_file_path "$init_file"
-

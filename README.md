@@ -2,6 +2,38 @@
 
 AetherLake is a contract-first PostgreSQL lakehouse foundation. Applications use ordinary PostgreSQL connections and write canonical tables backed directly by Apache Iceberg. PostgreSQL and `pg_lake` coordinate ACID transactions and catalog metadata, while the separate `pgduck_server` sidecar executes vectorized analytical work. Parquet data and Iceberg metadata live in S3-compatible storage, so compatible analytical engines read the same physical data without a replication pipeline.
 
+## Stakeholder demo
+
+The repository includes a presentation-ready web console that demonstrates the real data path—there is no mocked API or decorative dashboard. It can commit a new event into an Iceberg-backed PostgreSQL table, display the latest events, expose active Iceberg metadata pointers and extensions, and trigger the idempotent historical-delta procedure.
+
+Start the entire demo with one command:
+
+```bash
+make demo
+```
+
+On the first run, the command creates `.env`, compiles the pinned pg_lake/PostgreSQL/pgduck base images, builds every Compose service, and waits for the whole stack to become healthy. Native compilation can take 20–60 minutes depending on the machine; later starts reuse Docker’s cache.
+
+Open:
+
+- Stakeholder console: [http://localhost:8080](http://localhost:8080)
+- MinIO object browser: [http://localhost:9001](http://localhost:9001)
+
+Suggested five-minute walkthrough:
+
+1. Use the architecture strip to explain that PostgreSQL coordinates the commit while Iceberg/S3 holds the shared analytical data.
+2. Submit a live event and point out the returned transaction ID and immediate appearance in the event stream.
+3. Show the active Iceberg catalog pointers as evidence that the UI is reading live metadata.
+4. Run the historical delta and show that the history count advances atomically.
+5. Open MinIO to show the physical Parquet and Iceberg metadata objects.
+
+For direct Compose usage after the base images exist:
+
+```bash
+docker compose up -d --build
+./scripts/wait-healthy.sh
+```
+
 > This repository is production-oriented boilerplate, not a production control plane. Docker Compose intentionally does not claim to provide high availability, TLS termination, managed secrets, KMS, backups, or disaster recovery.
 
 ## Architecture
@@ -26,6 +58,7 @@ docker/postgres/init/       Ordered database contracts and schedules
 docker/postgres/            Hardened PostgreSQL startup configuration
 docker/pgduck/              Environment-rendered DuckDB S3 secret
 docker/minio/               Idempotent local bucket bootstrap
+demo-ui/                    Stakeholder console and live PostgreSQL API
 examples/                   Optional external Iceberg mount
 scripts/                    Reproducible build and readiness tooling
 tests/                      Transaction, metadata, and outage validation
@@ -43,6 +76,8 @@ The architectural requirements remain in [`requirements.md`](requirements.md).
 The first build compiles PostgreSQL, pg_lake, DuckDB, and their native dependencies. It is intentionally slow. Subsequent builds use Docker layer caching.
 
 `PG_LAKE_BUILD_JOBS` defaults to `2` to keep DuckDB compilation within an 8 GB Docker memory allocation. Increase it only when Docker has materially more memory; use `1` on constrained CI runners.
+
+The ARM64 demo build treats DuckDB's `spatial` extension as optional. The custom pgduck binary reports version `v0.0.1`, for which DuckDB's public repository does not publish an ARM64 spatial artifact; a failed spatial download therefore emits a warning instead of terminating pgduck. Core Iceberg, Parquet, S3, and analytical execution remain available. Geospatial workloads require building and packaging a matching spatial extension.
 
 ## Local development
 

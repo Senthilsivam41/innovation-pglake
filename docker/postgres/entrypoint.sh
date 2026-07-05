@@ -19,8 +19,9 @@ pgdata="$base/pgsql-$PG_MAJOR/data"
 socket_dir="$base/pgduck_socket_dir"
 marker="$pgdata/.aetherlake-initialized"
 
-mkdir -p "$pgdata/base/pgsql_tmp" "$socket_dir"
-chmod 0700 "$pgdata/base/pgsql_tmp" "$socket_dir"
+sudo mkdir -p "$pgdata/base/pgsql_tmp" "$socket_dir"
+sudo chown -R postgres:postgres "$pgdata/base/pgsql_tmp" "$socket_dir"
+sudo chmod 0700 "$pgdata/base/pgsql_tmp" "$socket_dir"
 
 cat > "$pgdata/aetherlake.conf" <<EOF
 listen_addresses = '*'
@@ -72,4 +73,3 @@ if [[ ! -f "$marker" ]]; then
 fi
 
 exec "$pg_bin/postgres" -D "$pgdata"
-
