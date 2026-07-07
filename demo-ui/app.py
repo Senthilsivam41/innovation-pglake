@@ -8,6 +8,7 @@ import psycopg
 from flask import Flask, jsonify, render_template, request
 from psycopg.rows import dict_row
 
+
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
 
@@ -63,35 +64,51 @@ def overview():
             SELECT
               (SELECT count(*) FROM aetherlake.events) AS event_count,
               (SELECT count(*) FROM aetherlake.event_history) AS history_count,
-              (SELECT count(*) FROM aetherlake.history_outbox) AS pending_count,
+              (SELECT count(*) FROM aetherlake.history_outbox) AS outbox_count,
               (SELECT count(*) FROM aetherlake.catalog) AS iceberg_tables,
-              current_setting('server_version') AS postgres_version
+              current_setting('server_version_num')::int AS postgres_version_num
             """
         )
         metrics = cursor.fetchone()
+
         cursor.execute(
             """
-            SELECT extname, extversion FROM pg_extension
-            WHERE extname IN ('pg_lake', 'pg_lake_iceberg', 'pg_cron')
+            SELECT extname, extversion
+            FROM pg_extension
+            WHERE extname IN ('pg_lake', 'pgduck_server', 'cron')
             ORDER BY extname
             """
         )
         extensions = cursor.fetchall()
-        cursor.execute(
-            "SELECT table_name, metadata_location FROM aetherlake.catalog ORDER BY table_name"
-        )
-        catalog = cursor.fetchall()
+
         cursor.execute(
             """
-            SELECT jobname, schedule, active FROM cron.job
-            WHERE jobname LIKE 'aetherlake-%' ORDER BY jobname
+            SELECT table_name, metadata_location
+            FROM aetherlake.catalog
+            ORDER BY table_name
+            """
+        )
+        catalog = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT jobname, schedule, active
+            FROM cron.job
+            WHERE command LIKE '%aetherlake%'
+            ORDER BY jobname
             """
         )
         jobs = cursor.fetchall()
 
-    metrics["query_ms"] = round((time.perf_counter() - started) * 1000, 1)
     return jsonify(
-        metrics=rows_json([metrics])[0],
+        metrics={
+            "event_count": metrics["event_count"],
+            "history_count": metrics["history_count"],
+            "outbox_count": metrics["outbox_count"],
+            "iceberg_tables": metrics["iceberg_tables"],
+            "query_ms": round((time.perf_counter() - started) * 1000, 1),
+            "postgres_version": metrics["postgres_version_num"],
+        },
         extensions=rows_json(extensions),
         catalog=rows_json(catalog),
         jobs=rows_json(jobs),
@@ -104,9 +121,10 @@ def events():
         cursor.execute(
             """
             SELECT event_id, tenant_id, event_type, event_time,
-                   payload, schema_version, event_source
+                   payload, schema_version, created_at
             FROM aetherlake.events
-            ORDER BY event_time DESC LIMIT 12
+            ORDER BY event_time DESC
+            LIMIT 12
             """
         )
         return jsonify(events=rows_json(cursor.fetchall()))
@@ -119,21 +137,27 @@ def create_event():
         tenant_id = int(body.get("tenant_id", 1001))
     except (TypeError, ValueError):
         return jsonify(error="Tenant ID must be an integer"), 400
-    event_type = str(body.get("event_type", "demo.interaction")).strip()
+
+    event_type = str(body.get("event_type", "stakeholder.demo")).strip()
     message = str(body.get("message", "Stakeholder demo event")).strip()
     if not event_type or len(event_type) > 120 or len(message) > 500:
-        return jsonify(error="Event type or message is invalid"), 400
+        return jsonify(error="Event type or message invalid"), 400
 
     with connection() as conn, conn.cursor() as cursor:
         cursor.execute(
             """
             INSERT INTO aetherlake.events(tenant_id, event_type, payload)
-            VALUES (%s, %s, jsonb_build_object('message', %s::text, 'origin', 'stakeholder-ui'))
+            VALUES (%s, %s, jsonb_build_object(
+                'message', %s::text,
+                'origin', 'stakeholder-ui',
+                'demo_id', 'demo-001'
+            ))
             RETURNING event_id, event_time
             """,
             (tenant_id, event_type, message),
         )
         created = cursor.fetchone()
+
     return jsonify(event=rows_json([created])[0]), 201
 
 
@@ -148,3 +172,7 @@ def sync_history():
 def database_error(error):
     app.logger.exception("Database request failed")
     return jsonify(error=error.diag.message_primary or "Database request failed"), 503
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8080")), debug=False)

@@ -2,7 +2,11 @@ const $ = (selector) => document.querySelector(selector);
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;",
   })[character]);
 }
 
@@ -26,7 +30,13 @@ async function api(path, options = {}) {
 
 function compactPath(path) {
   if (!path) return "metadata pending";
-  return path.length > 68 ? `${path.slice(0, 34)}…${path.slice(-28)}` : path;
+  return path.length > 86 ? `${path.slice(0, 42)}…${path.slice(-32)}` : path;
+}
+
+function setChecklistState() {
+  $("#checkPostgres").classList.add("checked");
+  $("#checkCatalog").classList.add("checked");
+  $("#checkSnowflake").classList.add("pending");
 }
 
 async function loadOverview() {
@@ -34,21 +44,27 @@ async function loadOverview() {
     const data = await api("/api/overview");
     $("#eventCount").textContent = data.metrics.event_count;
     $("#historyCount").textContent = data.metrics.history_count;
-    $("#tableCount").textContent = data.metrics.iceberg_tables;
+    $("#outboxCount").textContent = data.metrics.outbox_count;
     $("#queryMs").textContent = data.metrics.query_ms;
+
     $("#catalogList").innerHTML = data.catalog.map((table) => `
-      <div class="code-item"><b>${escapeHtml(table.table_name)}</b><code title="${escapeHtml(table.metadata_location)}">${escapeHtml(compactPath(table.metadata_location))}</code></div>
+      <div class="code-item">
+        <b>${escapeHtml(table.table_name)}</b>
+        <code title="${escapeHtml(table.metadata_location)}">${escapeHtml(compactPath(table.metadata_location))}</code>
+      </div>
     `).join("") || "<span class='tag'>No catalog entries</span>";
+
     $("#extensionList").innerHTML = data.extensions.map((extension) => `
       <span class="tag">${escapeHtml(extension.extname)} · ${escapeHtml(extension.extversion)}</span>
     `).join("");
+
     $("#jobList").innerHTML = data.jobs.map((job) => `
       <div class="job"><b>${escapeHtml(job.jobname)}</b><span>${escapeHtml(job.schedule)} · ${job.active ? "active" : "paused"}</span></div>
-    `).join("");
-    $(".pulse").classList.add("online");
-    $("#liveLabel").textContent = `Live · PostgreSQL ${data.metrics.postgres_version}`;
+    `).join("") || "<div class='job'><b>Historical sync</b><span>No job configured</span></div>";
+
+    $("#liveLabel").textContent = `PostgreSQL ${data.metrics.postgres_version}`;
+    setChecklistState();
   } catch (error) {
-    $("#liveLabel").textContent = "Lakehouse unavailable";
     toast(error.message, true);
   }
 }
@@ -61,12 +77,19 @@ async function loadEvents() {
         <span class="event-dot"></span>
         <span class="event-type" title="${escapeHtml(event.event_type)}">${escapeHtml(event.event_type)}</span>
         <span class="event-payload">${escapeHtml(JSON.stringify(event.payload))}</span>
-        <span class="event-time">${new Date(event.event_time).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"})}</span>
+        <span class="event-time">${new Date(event.event_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
       </div>
-    `).join("") || "<p>No events yet. Commit the first one.</p>";
+    `).join("");
   } catch (error) {
     toast(error.message, true);
   }
+}
+
+function highlightNewEvent() {
+  const firstRow = document.querySelector(".event-row");
+  if (!firstRow) return;
+  firstRow.classList.add("flash");
+  window.setTimeout(() => firstRow.classList.remove("flash"), 2200);
 }
 
 $("#eventForm").addEventListener("submit", async (event) => {
@@ -74,16 +97,17 @@ $("#eventForm").addEventListener("submit", async (event) => {
   const button = event.submitter;
   const form = new FormData(event.currentTarget);
   button.disabled = true;
-  $("#submitLabel").textContent = "Publishing snapshot…";
-  $("#commitResult").textContent = "";
+  $("#submitLabel").textContent = "Committing…";
+
   try {
     const data = await api("/api/events", {
       method: "POST",
       body: JSON.stringify(Object.fromEntries(form)),
     });
-    $("#commitResult").textContent = `COMMITTED · ${data.event.event_id}`;
-    toast("Iceberg snapshot committed successfully");
+    $("#commitResult").textContent = `COMMITTED ${data.event.event_id}`;
+    toast(`Event committed: ${data.event.event_id}`);
     await Promise.all([loadEvents(), loadOverview()]);
+    highlightNewEvent();
   } catch (error) {
     $("#commitResult").textContent = `ROLLED BACK · ${error.message}`;
     toast(error.message, true);
@@ -107,9 +131,12 @@ $("#syncButton").addEventListener("click", async (event) => {
 });
 
 $("#refreshButton").addEventListener("click", () => Promise.all([loadEvents(), loadOverview()]));
-document.querySelectorAll("[data-scroll]").forEach((button) => button.addEventListener("click", () => {
-  document.getElementById(button.dataset.scroll).scrollIntoView({ behavior: "smooth" });
-}));
+
+document.querySelectorAll("[data-scroll]").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.getElementById(button.dataset.scroll).scrollIntoView({ behavior: "smooth" });
+  });
+});
 
 Promise.all([loadOverview(), loadEvents()]);
 window.setInterval(loadOverview, 15000);
