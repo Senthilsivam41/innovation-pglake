@@ -4,93 +4,195 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Project AetherLake stakeholder demonstration">
-  <title>AetherLake · Shared storage, zero ETL</title>
+  <title>AetherLake · Shared storage demo</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <div class="aurora aurora-one"></div>
   <div class="aurora aurora-two"></div>
+
   <header class="topbar">
     <a class="brand" href="#top" aria-label="AetherLake home">
       <span class="brand-mark"><i></i><i></i><i></i></span>
       <span>Project <strong>AetherLake</strong></span>
     </a>
-    <div class="live-state"><span class="pulse"></span><span id="liveLabel">Connecting to lakehouse</span></div>
+    <div class="live-state"><span class="pulse"></span><span id="liveLabel">Connecting lakehouse</span></div>
   </header>
 
   <main id="top">
     <section class="hero">
-      <div class="eyebrow">POSTGRESQL × APACHE ICEBERG × OBJECT STORAGE</div>
-      <h1>Write once.<br><span>Analyze everywhere.</span></h1>
-      <p class="hero-copy">A zero-ETL shared-storage foundation where PostgreSQL commits transactional data directly into open Iceberg tables—ready for every analytical engine.</p>
+      <div class="eyebrow">POSTGRESQL × ICEBERG × SNOWFLAKE</div>
+      <h1>One write.<br><span>Two engines.</span></h1>
+      <p class="hero-copy">
+        This stakeholder demo shows the exact same event written once in PostgreSQL,
+        stored as Iceberg on object storage, and queried back from an external engine without a replication pipeline.
+      </p>
       <div class="hero-actions">
-        <button class="button primary" data-scroll="demo">Run the live demo <span>→</span></button>
-        <a class="button secondary" href="{{ minio_console }}" target="_blank" rel="noreferrer">Inspect object storage ↗</a>
+        <button class="button primary" data-scroll="demo">Run the 5-step demo <span>→</span></button>
+        <button class="button secondary" data-scroll="proof">Show the proof panels <span>↘</span></button>
       </div>
     </section>
 
-    <section class="flow" aria-label="Architecture data flow">
+    <section class="flow" aria-label="Demo flow">
       <article class="node">
-        <span class="node-number">01</span><div><small>TRANSACTION LAYER</small><h2>PostgreSQL</h2><p>One familiar SQL endpoint</p></div>
+        <span class="node-number">01</span>
+        <div>
+          <small>STEP 1</small>
+          <h2>Create a demo event</h2>
+          <p>Submit a visible business event through the PostgreSQL UI.</p>
+        </div>
       </article>
-      <div class="connector"><span></span><b>ACID COMMIT</b></div>
+      <div class="connector"><span></span><b>POSTGRESQL WRITE</b></div>
       <article class="node accent-node">
-        <span class="node-number">02</span><div><small>OPEN TABLE FORMAT</small><h2>Apache Iceberg</h2><p>Snapshots, metadata & schema</p></div>
+        <span class="node-number">02</span>
+        <div>
+          <small>STEP 2</small>
+          <h2>Commit to Iceberg</h2>
+          <p>PostgreSQL writes the canonical table and advances metadata atomically.</p>
+        </div>
       </article>
-      <div class="connector"><span></span><b>SHARED DATA</b></div>
+      <div class="connector"><span></span><b>SHARED STORAGE</b></div>
       <article class="node">
-        <span class="node-number">03</span><div><small>ANALYTICAL COMPUTE</small><h2>Any engine</h2><p>DuckDB, Spark, Databricks</p></div>
+        <span class="node-number">03</span>
+        <div>
+          <small>STEP 3</small>
+          <h2>Read back in PostgreSQL</h2>
+          <p>Show the row immediately in the source system with the same event ID.</p>
+        </div>
+      </article>
+      <div class="connector"><span></span><b>ICEBERG SNAPSHOT</b></div>
+      <article class="node">
+        <span class="node-number">04</span>
+        <div>
+          <small>STEP 4</small>
+          <h2>Query from Snowflake</h2>
+          <p>External analytical access returns the exact same row from shared storage.</p>
+        </div>
+      </article>
+      <div class="connector"><span></span><b>READ-ONLY CONSUMER</b></div>
+      <article class="node">
+        <span class="node-number">05</span>
+        <div>
+          <small>STEP 5</small>
+          <h2>Confirm consistency</h2>
+          <p>Prove one canonical copy, one snapshot pointer, and matching query results.</p>
+        </div>
       </article>
     </section>
 
     <section class="metrics" aria-label="Live platform metrics">
       <article><small>ICEBERG EVENTS</small><strong id="eventCount">—</strong><span>canonical rows</span></article>
       <article><small>HISTORY SNAPSHOT</small><strong id="historyCount">—</strong><span>archived rows</span></article>
-      <article><small>MANAGED TABLES</small><strong id="tableCount">—</strong><span>open Iceberg format</span></article>
-      <article><small>QUERY RESPONSE</small><strong><span id="queryMs">—</span><em> ms</em></strong><span>live from PostgreSQL</span></article>
+      <article><small>OUTBOX QUEUE</small><strong id="outboxCount">—</strong><span>delta sync backlog</span></article>
+      <article><small>QUERY RESPONSE</small><strong><span id="queryMs">—</span><em> ms</em></strong><span>live PostgreSQL</span></article>
     </section>
 
     <section class="demo-section" id="demo">
       <div class="section-heading">
-        <div><div class="eyebrow">LIVE TRANSACTION</div><h2>Watch one write travel the lakehouse.</h2></div>
-        <p>Submit an event through PostgreSQL. The same transaction writes Parquet and advances the Iceberg metadata pointer in MinIO.</p>
+        <div>
+          <div class="eyebrow">LIVE TRANSACTION</div>
+          <h2>Run the same proof the stakeholders will see.</h2>
+        </div>
+        <p>
+          Submit one event, highlight the PostgreSQL result, surface the Iceberg metadata pointer,
+          and point to the Snowflake query output as the shared-storage confirmation.
+        </p>
       </div>
 
       <div class="demo-grid">
-        <form class="event-form panel" id="eventForm">
-          <div class="panel-title"><span class="terminal-dots"><i></i><i></i><i></i></span><span>new_event.sql</span></div>
-          <label>Tenant ID<input name="tenant_id" type="number" value="1001" required></label>
-          <label>Event type<input name="event_type" value="stakeholder.demo" maxlength="120" required></label>
-          <label>Payload message<textarea name="message" rows="3" maxlength="500">AetherLake writes this event directly to shared Iceberg storage.</textarea></label>
-          <button class="button primary full" type="submit"><span id="submitLabel">Commit Iceberg transaction</span><span>⌁</span></button>
+        <form class="panel event-form" id="eventForm">
+          <div class="panel-title">
+            <span class="terminal-dots"><i></i><i></i><i></i></span>
+            <span>new_event.sql</span>
+          </div>
+
+          <label>Tenant ID
+            <input name="tenant_id" value="4242" required>
+          </label>
+          <label>Event type
+            <input name="event_type" value="stakeholder.demo" maxlength="120" required>
+          </label>
+          <label>Message
+            <textarea name="message" rows="4" maxlength="500">shared storage proof</textarea>
+          </label>
+
+          <button type="submit" class="button primary full">
+            <span id="submitLabel">Commit Iceberg transaction</span>
+            <span>⌁</span>
+          </button>
+
           <div class="commit-result" id="commitResult" aria-live="polite"></div>
         </form>
 
         <div class="panel event-panel">
-          <div class="panel-title"><span>Recent events</span><button class="text-button" id="refreshButton">Refresh ↻</button></div>
-          <div class="event-list" id="eventList"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+          <div class="panel-title">
+            <span>Recent PostgreSQL rows</span>
+            <button class="text-button" id="refreshButton" type="button">Refresh ↻</button>
+          </div>
+          <div id="eventList" class="event-list">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="proof-section">
+    <section class="proof-section" id="proof">
       <div class="section-heading compact">
-        <div><div class="eyebrow">OPEN BY DESIGN</div><h2>Proof, not promises.</h2></div>
-        <button class="button secondary" id="syncButton">Run historical delta</button>
+        <div>
+          <div class="eyebrow">SHARED STORAGE PROOF</div>
+          <h2>What the stakeholders should notice.</h2>
+        </div>
+        <button class="button secondary" id="syncButton" type="button">Run historical delta</button>
       </div>
+
       <div class="proof-grid">
-        <article class="panel proof-card"><small>CATALOG POINTERS</small><div id="catalogList" class="code-list"></div></article>
-        <article class="panel proof-card"><small>ACTIVE EXTENSIONS</small><div id="extensionList" class="tag-list"></div></article>
-        <article class="panel proof-card"><small>AUTOMATED OPERATIONS</small><div id="jobList" class="job-list"></div></article>
+        <article class="panel proof-card">
+          <small>STEP 2 · ICEBERG CATALOG POINTER</small>
+          <div id="catalogList" class="code-list"></div>
+        </article>
+        <article class="panel proof-card">
+          <small>STEP 3 · EXTENSIONS</small>
+          <div id="extensionList" class="tag-list"></div>
+        </article>
+        <article class="panel proof-card">
+          <small>STEP 4 · SCHEDULED SYNC</small>
+          <div id="jobList" class="job-list"></div>
+        </article>
+      </div>
+
+      <div class="proof-grid proof-grid-bottom">
+        <article class="panel proof-card">
+          <small>STEP 5 · SNOWFLAKE TALKING POINT</small>
+          <div class="proof-copy">
+            <p>Snowflake reads the same Iceberg table through the catalog bridge. The demo does not write from Snowflake.</p>
+            <p class="mono-note">Exact SQL example: SELECT event_id, tenant_id, event_type, payload FROM ... WHERE event_type = 'stakeholder.demo';</p>
+          </div>
+        </article>
+        <article class="panel proof-card">
+          <small>CONSISTENCY CHECK</small>
+          <ul class="checklist">
+            <li id="checkPostgres">PostgreSQL row visible</li>
+            <li id="checkCatalog">Iceberg metadata advanced</li>
+            <li id="checkSnowflake">Snowflake read path demonstrated</li>
+          </ul>
+        </article>
       </div>
     </section>
 
     <section class="value-strip">
-      <p>One copy of data.</p><p>No brittle replication.</p><p>Open analytical access.</p>
+      <p>One canonical copy.</p>
+      <p>No replication pipeline.</p>
+      <p>Two engines, same data.</p>
     </section>
   </main>
 
-  <footer><span>Project AetherLake · Open-source shared storage</span><code>s3://{{ bucket }}/{{ prefix }}/</code></footer>
+  <footer>
+    <span>Project AetherLake · Open-source shared storage</span>
+    <code>s3://{{ bucket }}/{{ prefix }}/</code>
+  </footer>
+
   <div class="toast" id="toast" role="status"></div>
   <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </body>
