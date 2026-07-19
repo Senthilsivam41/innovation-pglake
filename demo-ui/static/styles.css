@@ -8,7 +8,7 @@
   --lime: #d4f46a;
   --blue: #7dcdf5;
   --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --sans: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --sans: "Georgia", "Times New Roman", serif;
 }
 
 * { box-sizing: border-box; }
@@ -123,8 +123,8 @@ main {
   z-index: 1;
 }
 .hero {
-  padding: clamp(76px, 12vw, 140px) 0 70px;
-  max-width: 860px;
+  padding: clamp(76px, 12vw, 132px) 0 62px;
+  max-width: 900px;
 }
 .eyebrow {
   font-family: var(--mono);
@@ -135,19 +135,19 @@ main {
 }
 h1 {
   margin: 0;
-  font-size: clamp(54px, 8vw, 102px);
-  line-height: 0.94;
-  letter-spacing: -0.07em;
-  font-weight: 500;
+  font-size: clamp(58px, 8vw, 108px);
+  line-height: 0.92;
+  letter-spacing: -0.08em;
+  font-weight: 600;
 }
 h1 span {
   color: transparent;
   -webkit-text-stroke: 1px rgba(237, 248, 245, 0.7);
 }
 .hero-copy {
-  max-width: 680px;
+  max-width: 760px;
   color: var(--muted);
-  font-size: clamp(17px, 2vw, 20px);
+  font-size: clamp(18px, 2vw, 22px);
   line-height: 1.65;
   margin: 32px 0 34px;
 }
@@ -164,6 +164,10 @@ h1 span {
   font: 10px var(--mono);
   color: var(--muted);
   background: rgba(255, 255, 255, 0.02);
+}
+.hero-pills.executive span {
+  border-color: rgba(120, 241, 197, 0.22);
+  color: var(--ink);
 }
 .hero-actions {
   display: flex;
@@ -215,8 +219,8 @@ h1 span {
   align-items: center;
 }
 .storage-band-flow article {
-  min-height: 138px;
-  padding: 20px 18px;
+  min-height: 150px;
+  padding: 22px 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
@@ -248,8 +252,8 @@ h1 span {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
-  padding: 8px 0 24px;
-  margin-bottom: 24px;
+  padding: 8px 0 18px;
+  margin-bottom: 20px;
 }
 .node,
 .connector {
@@ -258,7 +262,7 @@ h1 span {
   align-items: flex-start;
 }
 .node {
-  padding: 20px 18px;
+  padding: 18px 16px;
   background: rgba(7, 16, 15, 0.54);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -281,8 +285,8 @@ h1 span {
 }
 .node h2 {
   margin: 0 0 8px;
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
 }
 .node p {
   margin: 0;
@@ -348,21 +352,21 @@ h1 span {
 }
 .section-heading h2 {
   margin: 0;
-  font-size: clamp(32px, 4vw, 48px);
+  font-size: clamp(32px, 4vw, 46px);
   letter-spacing: -0.05em;
-  font-weight: 500;
+  font-weight: 600;
 }
 .section-heading p {
   max-width: 460px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.65;
 }
 .section-heading.compact { align-items: center; }
 
 .demo-grid {
   display: grid;
-  grid-template-columns: 0.92fr 1.08fr;
+  grid-template-columns: 0.88fr 1.12fr;
   gap: 18px;
 }
 .panel {
@@ -469,12 +473,12 @@ textarea:focus {
 
 .proof-grid {
   display: grid;
-  grid-template-columns: 1.3fr 0.9fr 1fr;
+  grid-template-columns: 1.2fr 0.9fr 1fr;
   gap: 18px;
   margin-bottom: 18px;
 }
 .proof-grid-bottom {
-  grid-template-columns: 0.9fr 1.1fr;
+  grid-template-columns: 1fr 1fr;
 }
 .proof-card { min-height: 190px; }
 .code-list,
@@ -573,7 +577,7 @@ textarea:focus {
   border-bottom: 1px solid var(--line);
 }
 .value-strip p {
-  font-size: clamp(17px, 2vw, 24px);
+  font-size: clamp(17px, 2vw, 22px);
   padding: 28px;
   margin: 0;
   border-right: 1px solid var(--line);

@@ -22,18 +22,18 @@
   <main id="top">
     <section class="hero">
       <div class="eyebrow">POSTGRESQL × ICEBERG × SNOWFLAKE</div>
-      <h1>One write.<br><span>Two engines.</span></h1>
+      <h1>One system of record.<br><span>Many readers.</span></h1>
       <p class="hero-copy">
-        This stakeholder demo shows the exact same event written once in PostgreSQL,
-        stored as Iceberg on object storage, and queried back from an external engine without a replication pipeline.
+        Executive proof: PostgreSQL writes once, Iceberg stores the canonical copy, and Snowflake reads the same data without a replication pipeline.
       </p>
-      <div class="hero-pills">
-        <span>Immutable by design</span>
-        <span>Near real-time visibility</span>
+      <div class="hero-pills executive">
+        <span>System of record</span>
+        <span>Shared storage</span>
+        <span>Read-only analytics</span>
       </div>
       <div class="hero-actions">
-        <button class="button primary" data-scroll="demo">Run the 5-step demo <span>→</span></button>
-        <button class="button secondary" data-scroll="proof">Show the proof panels <span>↘</span></button>
+        <button class="button primary" data-scroll="demo">Show the live proof <span>→</span></button>
+        <button class="button secondary" data-scroll="proof">Open the evidence panel <span>↘</span></button>
       </div>
     </section>
 
@@ -65,7 +65,7 @@
         <span class="node-number">01</span>
         <div>
           <small>1. COMMIT EVENT</small>
-          <h2>Create a demo event</h2>
+          <h2>Create the event</h2>
           <p>Submit one visible business event through the PostgreSQL UI.</p>
         </div>
       </article>
@@ -83,7 +83,7 @@
         <span class="node-number">03</span>
         <div>
           <small>3. RECENT ROWS</small>
-          <h2>Read back in PostgreSQL</h2>
+          <h2>Verify in PostgreSQL</h2>
           <p>Show the row immediately in the source system with the same event ID.</p>
         </div>
       </article>
@@ -92,7 +92,7 @@
         <span class="node-number">04</span>
         <div>
           <small>4. EXTERNAL READ</small>
-          <h2>Query from Snowflake</h2>
+          <h2>Read from Snowflake</h2>
           <p>External analytical access returns the exact same row from shared storage.</p>
         </div>
       </article>
@@ -118,7 +118,7 @@
       <div class="section-heading">
         <div>
           <div class="eyebrow">LIVE TRANSACTION</div>
-          <h2>Run the same proof the stakeholders will see.</h2>
+          <h2>Run the exact proof stakeholders will see.</h2>
         </div>
         <p>
           Submit one event, highlight the PostgreSQL result, surface the Iceberg metadata pointer,
@@ -176,15 +176,15 @@
 
       <div class="proof-grid">
         <article class="panel proof-card">
-          <small>STEP 2 · ICEBERG CATALOG POINTER</small>
+          <small>ICEBERG CATALOG POINTER</small>
           <div id="catalogList" class="code-list"></div>
         </article>
         <article class="panel proof-card">
-          <small>STEP 3 · EXTENSIONS</small>
+          <small>PLATFORM STATUS</small>
           <div id="extensionList" class="tag-list"></div>
         </article>
         <article class="panel proof-card">
-          <small>STEP 4 · SNOWFLAKE READ-ONLY CONSUMER</small>
+          <small>SNOWFLAKE READ-ONLY CONSUMER</small>
           <div class="proof-copy">
             <p>Snowflake reads the same Iceberg table through the catalog bridge. The demo does not write from Snowflake.</p>
             <p class="mono-note">SELECT event_id, tenant_id, event_type, payload FROM ... WHERE event_type = 'stakeholder.demo';</p>
@@ -194,7 +194,7 @@
 
       <div class="proof-grid proof-grid-bottom">
         <article class="panel proof-card">
-          <small>STEP 5 · SCHEDULED DELTA LOOP</small>
+          <small>OPERATIONAL LOOP</small>
           <div id="jobList" class="job-list"></div>
         </article>
         <article class="panel proof-card">
