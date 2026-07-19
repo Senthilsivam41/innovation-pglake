@@ -89,6 +89,7 @@ function highlightNewEvent() {
   const firstRow = document.querySelector(".event-row");
   if (!firstRow) return;
   firstRow.classList.add("flash");
+  $("#checkSnowflake").classList.add("checked");
   window.setTimeout(() => firstRow.classList.remove("flash"), 2200);
 }
 

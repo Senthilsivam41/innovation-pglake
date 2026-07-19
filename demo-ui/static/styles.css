@@ -8,7 +8,7 @@
   --lime: #d4f46a;
   --blue: #7dcdf5;
   --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --sans: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --sans: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -151,6 +151,20 @@ h1 span {
   line-height: 1.65;
   margin: 32px 0 34px;
 }
+.hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+.hero-pills span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 12px;
+  font: 10px var(--mono);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.02);
+}
 .hero-actions {
   display: flex;
   gap: 12px;
@@ -183,9 +197,56 @@ h1 span {
   cursor: pointer;
 }
 
+.storage-band {
+  margin-bottom: 18px;
+  padding: 22px;
+}
+.storage-band-title {
+  text-align: center;
+  font: 11px var(--mono);
+  color: var(--muted);
+  letter-spacing: 0.14em;
+  margin-bottom: 16px;
+}
+.storage-band-flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 18px;
+  align-items: center;
+}
+.storage-band-flow article {
+  min-height: 138px;
+  padding: 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.storage-band-flow strong {
+  display: block;
+  font-size: 20px;
+  margin: 10px 0 6px;
+}
+.storage-band-flow p { margin: 0; color: var(--muted); font-size: 13px; }
+.storage-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 6px 7px;
+  border-radius: 6px;
+  background: rgba(120, 241, 197, 0.08);
+  border: 1px solid rgba(120, 241, 197, 0.18);
+  font: 11px var(--mono);
+  color: var(--ink);
+}
+.storage-arrow {
+  color: var(--mint);
+  font-size: 28px;
+  line-height: 1;
+}
 .flow {
   display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr auto 1fr;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   padding: 8px 0 24px;
   margin-bottom: 24px;
@@ -229,30 +290,21 @@ h1 span {
   line-height: 1.5;
   font-size: 14px;
 }
+.node-number {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  margin-right: 0;
+  margin-bottom: 14px;
+}
 .accent-node {
   background: rgba(120, 241, 197, 0.05);
   border-color: rgba(120, 241, 197, 0.18);
 }
-.connector {
-  width: 84px;
-  position: relative;
-  align-items: center;
-  justify-content: center;
-}
-.connector span {
-  display: block;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(120, 241, 197, 0.9), transparent);
-}
-.connector b {
-  position: absolute;
-  top: 92px;
-  font: 8px var(--mono);
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  white-space: nowrap;
-}
+.connector { display: none; }
 
 .metrics {
   display: grid;
@@ -310,7 +362,7 @@ h1 span {
 
 .demo-grid {
   display: grid;
-  grid-template-columns: 0.9fr 1.25fr;
+  grid-template-columns: 0.92fr 1.08fr;
   gap: 18px;
 }
 .panel {
@@ -417,12 +469,12 @@ textarea:focus {
 
 .proof-grid {
   display: grid;
-  grid-template-columns: 1.4fr 0.8fr 1fr;
+  grid-template-columns: 1.3fr 0.9fr 1fr;
   gap: 18px;
   margin-bottom: 18px;
 }
 .proof-grid-bottom {
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 0.9fr 1.1fr;
 }
 .proof-card { min-height: 190px; }
 .code-list,
@@ -509,6 +561,10 @@ textarea:focus {
   border-color: rgba(125, 205, 245, 0.24);
 }
 
+.proof-copy .mono-note {
+  margin-bottom: 0;
+}
+
 .value-strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -563,8 +619,10 @@ footer code {
 @keyframes flash { 0% { background: rgba(120, 241, 197, 0.22); } 100% { background: rgba(255, 255, 255, 0.015); } }
 
 @media (max-width: 1080px) {
+  .storage-band-flow,
   .flow { grid-template-columns: 1fr; }
-  .connector { display: none; }
+  .storage-arrow { display: none; }
+  .storage-band-flow article { min-height: auto; }
   .demo-grid,
   .proof-grid,
   .proof-grid-bottom,
@@ -586,13 +644,15 @@ footer code {
   .proof-grid,
   .proof-grid-bottom,
   .metrics,
-  .value-strip {
+  .value-strip,
+  .storage-band-flow {
     grid-template-columns: 1fr;
   }
   .metrics article,
   .value-strip p { border-right: 0; border-bottom: 1px solid var(--line); }
   .metrics article:last-child,
   .value-strip p:last-child { border-bottom: 0; }
+  .storage-band { padding: 18px; }
   .event-row { grid-template-columns: 10px 1fr; }
   .event-payload,
   .event-time { display: none; }

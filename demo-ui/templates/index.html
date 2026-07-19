@@ -27,9 +27,36 @@
         This stakeholder demo shows the exact same event written once in PostgreSQL,
         stored as Iceberg on object storage, and queried back from an external engine without a replication pipeline.
       </p>
+      <div class="hero-pills">
+        <span>Immutable by design</span>
+        <span>Near real-time visibility</span>
+      </div>
       <div class="hero-actions">
         <button class="button primary" data-scroll="demo">Run the 5-step demo <span>→</span></button>
         <button class="button secondary" data-scroll="proof">Show the proof panels <span>↘</span></button>
+      </div>
+    </section>
+
+    <section class="storage-band panel" aria-label="Shared storage proof">
+      <div class="storage-band-title">SHARED STORAGE (S3 / OBJECT STORE)</div>
+      <div class="storage-band-flow">
+        <article>
+          <span class="storage-icon">PG</span>
+          <strong>PostgreSQL</strong>
+          <p>Writes once</p>
+        </article>
+        <div class="storage-arrow">→</div>
+        <article class="accent-node">
+          <span class="storage-icon">ICE</span>
+          <strong>Apache Iceberg</strong>
+          <p>Advances metadata</p>
+        </article>
+        <div class="storage-arrow">→</div>
+        <article>
+          <span class="storage-icon">SF</span>
+          <strong>Snowflake</strong>
+          <p>Reads same data</p>
+        </article>
       </div>
     </section>
 
@@ -37,16 +64,16 @@
       <article class="node">
         <span class="node-number">01</span>
         <div>
-          <small>STEP 1</small>
+          <small>1. COMMIT EVENT</small>
           <h2>Create a demo event</h2>
-          <p>Submit a visible business event through the PostgreSQL UI.</p>
+          <p>Submit one visible business event through the PostgreSQL UI.</p>
         </div>
       </article>
       <div class="connector"><span></span><b>POSTGRESQL WRITE</b></div>
       <article class="node accent-node">
         <span class="node-number">02</span>
         <div>
-          <small>STEP 2</small>
+          <small>2. ICEBERG METADATA</small>
           <h2>Commit to Iceberg</h2>
           <p>PostgreSQL writes the canonical table and advances metadata atomically.</p>
         </div>
@@ -55,7 +82,7 @@
       <article class="node">
         <span class="node-number">03</span>
         <div>
-          <small>STEP 3</small>
+          <small>3. RECENT ROWS</small>
           <h2>Read back in PostgreSQL</h2>
           <p>Show the row immediately in the source system with the same event ID.</p>
         </div>
@@ -64,7 +91,7 @@
       <article class="node">
         <span class="node-number">04</span>
         <div>
-          <small>STEP 4</small>
+          <small>4. EXTERNAL READ</small>
           <h2>Query from Snowflake</h2>
           <p>External analytical access returns the exact same row from shared storage.</p>
         </div>
@@ -73,7 +100,7 @@
       <article class="node">
         <span class="node-number">05</span>
         <div>
-          <small>STEP 5</small>
+          <small>5. CONSISTENCY CHECK</small>
           <h2>Confirm consistency</h2>
           <p>Prove one canonical copy, one snapshot pointer, and matching query results.</p>
         </div>
@@ -157,18 +184,18 @@
           <div id="extensionList" class="tag-list"></div>
         </article>
         <article class="panel proof-card">
-          <small>STEP 4 · SCHEDULED SYNC</small>
-          <div id="jobList" class="job-list"></div>
+          <small>STEP 4 · SNOWFLAKE READ-ONLY CONSUMER</small>
+          <div class="proof-copy">
+            <p>Snowflake reads the same Iceberg table through the catalog bridge. The demo does not write from Snowflake.</p>
+            <p class="mono-note">SELECT event_id, tenant_id, event_type, payload FROM ... WHERE event_type = 'stakeholder.demo';</p>
+          </div>
         </article>
       </div>
 
       <div class="proof-grid proof-grid-bottom">
         <article class="panel proof-card">
-          <small>STEP 5 · SNOWFLAKE TALKING POINT</small>
-          <div class="proof-copy">
-            <p>Snowflake reads the same Iceberg table through the catalog bridge. The demo does not write from Snowflake.</p>
-            <p class="mono-note">Exact SQL example: SELECT event_id, tenant_id, event_type, payload FROM ... WHERE event_type = 'stakeholder.demo';</p>
-          </div>
+          <small>STEP 5 · SCHEDULED DELTA LOOP</small>
+          <div id="jobList" class="job-list"></div>
         </article>
         <article class="panel proof-card">
           <small>CONSISTENCY CHECK</small>
