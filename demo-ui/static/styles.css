@@ -434,6 +434,21 @@ textarea:focus {
   font: 12px var(--mono);
   overflow-wrap: anywhere;
 }
+.storage-receipt {
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid rgba(120, 241, 197, 0.25);
+  border-radius: 7px;
+  background: rgba(120, 241, 197, 0.04);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.storage-receipt small,
+.storage-receipt code { display: block; }
+.storage-receipt small { color: var(--mint); font: 10px var(--mono); margin-bottom: 8px; }
+.storage-receipt code { color: var(--ink); font: 10px var(--mono); overflow-wrap: anywhere; margin-bottom: 8px; }
+.storage-receipt span { display: block; margin-bottom: 4px; }
 
 .event-list {
   display: flex;

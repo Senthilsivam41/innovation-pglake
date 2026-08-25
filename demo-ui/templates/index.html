@@ -149,6 +149,12 @@
           </button>
 
           <div class="commit-result" id="commitResult" aria-live="polite"></div>
+          <div class="storage-receipt" id="storageReceipt" hidden aria-live="polite">
+            <small>OBJECT STORE RECEIPT</small>
+            <code id="storageTablePath"></code>
+            <span>Iceberg snapshot metadata:</span>
+            <code id="storageMetadataPath"></code>
+          </div>
         </form>
 
         <div class="panel event-panel">
