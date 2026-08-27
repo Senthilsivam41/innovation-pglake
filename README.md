@@ -198,6 +198,35 @@ views, their snapshot ids, and the target snapshot before and after — and runs
 Delete-then-insert over a bounded window is the idempotency primitive: pg_lake supports `DELETE`
 on Iceberg tables but not `MERGE` or `ON CONFLICT`.
 
+### Scale
+
+```bash
+make seed-scale                    # 10M production readings, about a minute
+make seed-scale ROWS=1000000       # or fewer
+```
+
+Measured on a laptop (Docker, 15 GB, 10 CPUs) against this pinned build:
+
+| | |
+|---|---|
+| Bulk ingest into Iceberg | ~200k rows/sec |
+| `production_measurement` | 10,025,920 rows in 325 Parquet files |
+| SDM build over 10M readings | 7.4 s |
+| `semantic.resolve()` on the solution view | ~21 ms |
+
+Two shapes matter more than raw volume here, and both were found by measurement rather than
+assumption:
+
+- **Partitioning is a write-amplification decision, not just a read optimisation.** An earlier
+  spec added `bucket(8, wellbore)` on top of `month(measured_at)`. With twelve distinct
+  wellbores that bought no pruning while multiplying the files each `INSERT` writes: 125,920
+  rows landed as **73,239** Parquet files, and pg_lake's own cleanup glob began failing with
+  object-store connection errors. Time-only partitioning stores 10M rows in **325** files.
+- **Bulk-load with few large statements, not many small ones.** Every committed transaction
+  publishes an Iceberg snapshot and DML takes a table lock, so concurrent small writes
+  serialise. `scripts/seed-scale.sh` inserts server-side in chunks; `load_test.py --target
+  measurements` still exists to *measure* that contention, which is a different question.
+
 ```bash
 make test-semantic   # the model is a contract: undeclared access is refused
 make test-sdm        # idempotent, snapshot really advanced, no denormalisation drift

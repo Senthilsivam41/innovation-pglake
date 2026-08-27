@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS dm_dom_well_production.production_measurement (
 )
 USING iceberg
 WITH (
-      partition_by = 'month(measured_at), bucket(8, wellbore)',
+      partition_by = 'month(measured_at)',
       out_of_range_values = 'error',
       max_snapshot_age = 86400
 );

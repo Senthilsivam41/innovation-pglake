@@ -10,9 +10,17 @@ defaults:
   max_snapshot_age: 604800
 
 tables:
-  # The only high-volume table in the model, so the only one worth partitioning.
+  # The only high-volume table in the model, so the only one worth partitioning - and even
+  # here, by time only.
+  #
+  # An earlier spec added bucket(8, wellbore). With just twelve distinct wellbores that buys
+  # no pruning, and it multiplies the partitions every INSERT has to write: one file per
+  # (month x bucket) per statement. At ~100 partitions a statement the object store ends up
+  # with tens of thousands of tiny Parquet files, and pg_lake's own cleanup glob starts
+  # failing with connection errors. Partition count is a write-amplification decision, not
+  # just a read optimisation.
   dm_dom_well_production.ProductionMeasurement:
-    partition_by: 'month(measured_at), bucket(8, wellbore)'
+    partition_by: 'month(measured_at)'
     max_snapshot_age: 86400
 
   # Twelve wellbores: month() alone. bucket(32, ...) here would produce 32 tiny files a month.

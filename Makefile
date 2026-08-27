@@ -2,7 +2,7 @@
 PYTHON := $(shell test -x .venv/bin/python && echo .venv/bin/python || echo python3)
 
 .PHONY: bootstrap build demo up down reset wait test test-failure logs config \
-        model model-check probe test-semantic test-sdm test-openness test-all
+        model model-check probe seed-scale test-semantic test-sdm test-openness test-all
 
 bootstrap:
 	@test -f .env || cp .env.example .env
@@ -54,6 +54,10 @@ test-sdm:
 
 test-openness:
 	./tests/openness.sh
+
+# Generate production history at volume. Defaults to 10M rows, roughly a minute.
+seed-scale:
+	./scripts/seed-scale.sh $(or $(ROWS),10000000) $(or $(CHUNK),250000)
 
 test-all: test test-semantic test-sdm test-openness
 
