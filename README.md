@@ -54,6 +54,8 @@ flowchart LR
 ## Repository layout
 
 ```text
+models/                     Cognite Toolkit YAML: the EDM, the SDM, vendored CDM types
+scripts/compile-model.py    Compiles that YAML into Iceberg tables, views and metadata
 docker/postgres/init/       Ordered database contracts and schedules
 docker/postgres/            Hardened PostgreSQL startup configuration
 docker/pgduck/              Environment-rendered DuckDB S3 secret
@@ -110,6 +112,97 @@ make logs          # follow database, pgduck, and storage logs
 make test-failure  # stop MinIO and prove failed writes remain invisible
 make down          # stop services and preserve data
 make reset         # destroy local volumes and reinitialize from scratch
+```
+
+## CDF data modelling on the lake
+
+AetherLake runs Cognite Data Fusion's data-modelling semantics — spaces, containers, views,
+direct and reverse relations, Enterprise and Solution Data Models — directly over Iceberg. The
+model is authored once, in real Cognite Toolkit YAML, and that same YAML deploys to CDF and
+compiles into this runtime.
+
+```bash
+make model        # cdf build, then compile to docker/postgres/init/08-model.sql
+make model-check  # fail if the checked-in SQL has drifted from models/
+```
+
+The compiler reads `models/build/data_models/` — the output of `cdf build`, which is the exact
+artifact CDF itself consumes — so Toolkit's variable substitution is never reimplemented and the
+generated SQL is provably derived from what would be deployed.
+
+| Toolkit concept | Becomes |
+|---|---|
+| schema space | a PostgreSQL schema |
+| instance space | the `space` column value on every row, not a schema |
+| container | an Iceberg table, `<space>.<snake(externalId)>`, **unversioned** |
+| view | a PostgreSQL view, `<space>.<snake(externalId)>_<version>`, **versioned** |
+| direct relation | a `text` column holding the target's `node_external_id` |
+| reverse relation | metadata only — joined on demand, never a column |
+
+The version living on the view rather than the table is the whole Cognite model in one naming
+rule: containers are the durable contract, views are the query API, and v1 and v2 coexist for
+free.
+
+### The model
+
+`WellProduction_DOM` (`dm_dom_well_production`) covers oil and gas production: a single `Asset`
+view implementing `cdf_cdm:CogniteAsset` for the Draugen and Njord field/well/wellbore
+hierarchy, `WellIntervention` implementing `cdf_idm:CogniteMaintenanceOrder`, and
+`ProductionMeasurement` as a `usedFor: record` container. Records get no view by design — the
+semantic layer covers the graph, and the analytical job reaches below it into the record store.
+
+`ProductionAnalytics_SOL` (`dm_sol_production_analytics`) is the solution layer: one
+denormalised `WellProductionDaily` view carrying well and field context on every row so a
+dashboard reads a day of production without traversing.
+
+Thirteen model rules are enforced at compile time and are build-fatal — every direct relation
+needs a `source`, every property needs a description, reverse relations must satisfy
+REVERSE-008/009, and at most one view per data model may implement `CogniteAsset`. That last one
+is worth knowing: `cdf build` accepts a model that violates it; this compiler does not.
+
+```bash
+git apply demo/break-the-model.patch && make model   # exits 1
+git checkout models/
+```
+
+### Querying through the semantic layer
+
+`semantic.resolve(jsonb)` plans a CDF `/instances/list`-shaped request against the metadata and
+runs it. It is not CDF's multi-result-set `/instances/query` graph, and does not claim to be.
+
+```sql
+SELECT jsonb_pretty(semantic.resolve('{
+  "space": "dm_dom_well_production", "view": "Asset", "version": "v1",
+  "properties": ["name", "wellType"],
+  "filter": {"equals": {"property": ["assetType"], "value": "well"}},
+  "traverse": [{"property": "interventions", "properties": ["name", "status"]}],
+  "limit": 5, "explain": true
+}'::jsonb));
+```
+
+`explain` returns the generated SQL verbatim, plus the Iceberg snapshot id of every table read.
+
+Governance is a privilege boundary rather than a convention: `APP_USER` holds `USAGE` on
+`semantic` and on no model schema, so instance data is reachable only through a function that
+refuses anything the model does not declare. An undeclared property or traversal raises
+`22023`, which the console surfaces as `400`.
+
+### The analytical job
+
+`aetherlake.build_well_production_daily(from, to)` reads the compiled EDM **views** and the
+record container, and writes the denormalised daily aggregate back into Iceberg. It reuses the
+advisory-lock idiom from the delta loop, records lineage in `aetherlake.sdm_build_log` — source
+views, their snapshot ids, and the target snapshot before and after — and runs on `SDM_CRON`
+(default every ten minutes).
+
+Delete-then-insert over a bounded window is the idempotency primitive: pg_lake supports `DELETE`
+on Iceberg tables but not `MERGE` or `ON CONFLICT`.
+
+```bash
+make test-semantic   # the model is a contract: undeclared access is refused
+make test-sdm        # idempotent, snapshot really advanced, no denormalisation drift
+make test-openness   # DuckDB reads the SDM table from object storage, no PostgreSQL involved
+make probe           # what this pinned pg_lake build actually supports
 ```
 
 ## Storage and connection contracts
