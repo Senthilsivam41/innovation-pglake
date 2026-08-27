@@ -18,7 +18,9 @@ psql_exec=(docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 -U "$POSTG
 
 "${psql_exec[@]}" -Atqc "SELECT aetherlake.healthcheck()" | grep -qx t
 "${psql_exec[@]}" -Atqc "SELECT count(*) >= 2 FROM aetherlake.events" | grep -qx t
-"${psql_exec[@]}" -Atqc "SELECT count(*) = 2 FROM aetherlake.catalog" | grep -qx t
+# The two contract tables plus every container compiled from models/.
+"${psql_exec[@]}" -Atqc "SELECT count(*) >= 2 FROM aetherlake.catalog WHERE table_namespace = 'aetherlake'" | grep -qx t
+"${psql_exec[@]}" -Atqc "SELECT count(*) > 2 FROM aetherlake.catalog" | grep -qx t
 "${psql_exec[@]}" -Atqc "SELECT metadata_location LIKE 's3://%' FROM aetherlake.catalog ORDER BY table_name LIMIT 1" | grep -qx t
 
 "${psql_exec[@]}" <<'SQL'
