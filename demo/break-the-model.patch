@@ -1,0 +1,12 @@
+diff --git a/models/modules/well_production/data_models/views/WellIntervention.View.yaml b/models/modules/well_production/data_models/views/WellIntervention.View.yaml
+index 3f79e3e..f479910 100644
+--- a/models/modules/well_production/data_models/views/WellIntervention.View.yaml
++++ b/models/modules/well_production/data_models/views/WellIntervention.View.yaml
+@@ -7,6 +7,7 @@ description: >-
+   priority and the expected production uplift.
+ implements:
+   - { space: cdf_idm, externalId: CogniteMaintenanceOrder, version: v1, type: view }
++  - { space: cdf_cdm, externalId: CogniteAsset, version: v1, type: view }
+ properties:
+   name:
+     container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
