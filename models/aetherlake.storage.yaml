@@ -1,0 +1,20 @@
+# Platform-specific physical plan for the AetherLake runtime.
+#
+# This is NOT Cognite Toolkit YAML and is never deployed to CDF. Partitioning and snapshot
+# retention are pg_lake concepts with no Toolkit equivalent, and adding x-* keys to the real
+# model files would make them fail `cdf build` - which would destroy the whole point.
+#
+# The model is portable; the physical plan is per-platform.
+defaults:
+  out_of_range_values: error
+  max_snapshot_age: 604800
+
+tables:
+  # The only high-volume table in the model, so the only one worth partitioning.
+  dm_dom_well_production.ProductionMeasurement:
+    partition_by: 'month(measured_at), bucket(8, wellbore)'
+    max_snapshot_age: 86400
+
+  # Twelve wellbores: month() alone. bucket(32, ...) here would produce 32 tiny files a month.
+  dm_sol_production_analytics.WellProductionDaily:
+    partition_by: 'month(production_date)'

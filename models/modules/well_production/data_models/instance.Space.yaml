@@ -1,0 +1,3 @@
+space: '{{ instance_space }}'
+name: Well production instance space
+description: Instance space holding all well production nodes and records.

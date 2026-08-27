@@ -1,0 +1,62 @@
+space: '{{ edm_space }}'
+externalId: ProductionMeasurement
+name: Production measurement
+description: High-volume metered production reading taken at a wellbore at a point in time.
+usedFor: record
+properties:
+  wellbore:
+    type: { list: false, type: direct }
+    nullable: false
+    immutable: false
+    autoIncrement: false
+    name: Wellbore
+    description: The wellbore this reading was metered at.
+  measuredAt:
+    type: { list: false, type: timestamp }
+    nullable: false
+    immutable: false
+    autoIncrement: false
+    name: Measured at
+    description: Timestamp at which the reading was taken.
+  oilRateBpd:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Oil rate (bpd)
+    description: Instantaneous oil production rate, in barrels per day.
+  gasRateMscfd:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Gas rate (Mscf/d)
+    description: Instantaneous gas production rate, in thousand standard cubic feet per day.
+  waterRateBpd:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Water rate (bpd)
+    description: Instantaneous produced water rate, in barrels per day.
+  tubingHeadPressureBar:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Tubing head pressure (bar)
+    description: Pressure measured at the tubing head at the time of the reading, in bar.
+  chokePercent:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Choke opening (%)
+    description: Production choke opening at the time of the reading, as a percentage.
+  quality:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Reading quality
+    description: Metering quality flag - good, suspect or bad - used to compute uptime.

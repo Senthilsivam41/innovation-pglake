@@ -1,0 +1,32 @@
+space: '{{ edm_space }}'
+externalId: WellIntervention
+name: Well intervention
+description: Maintenance or remedial work carried out on a well to restore or improve production.
+usedFor: node
+properties:
+  interventionType:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Intervention type
+    description: Category of intervention, for example ESP replacement or coiled tubing cleanout.
+  estimatedUpliftBpd:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Estimated uplift (bpd)
+    description: Expected production gain from the intervention, in barrels per day.
+constraints:
+  maintenanceOrderPresent:
+    constraintType: requires
+    require: { space: cdf_idm, externalId: CogniteMaintenanceOrder, type: container }
+  activityPresent:
+    constraintType: requires
+    require: { space: cdf_cdm, externalId: CogniteActivity, type: container }
+indexes:
+  interventionType:
+    indexType: btree
+    properties: [interventionType]
+    cursorable: false

@@ -1,0 +1,7 @@
+space: '{{ sdm_space }}'
+externalId: ProductionAnalytics_SOL
+name: Production analytics SOL
+description: Solution model serving daily production surveillance dashboards.
+version: '{{ sdm_version }}'
+views:
+  - { space: '{{ sdm_space }}', externalId: WellProductionDaily, version: '{{ sdm_version }}', type: view, name: Well production daily }

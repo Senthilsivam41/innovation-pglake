@@ -1,0 +1,3 @@
+space: '{{ sdm_space }}'
+name: Production analytics DM SOL
+description: Solution schema space for the production surveillance use case.

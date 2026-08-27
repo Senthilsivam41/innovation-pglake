@@ -1,0 +1,128 @@
+space: '{{ edm_space }}'
+externalId: Asset
+name: Asset
+version: '{{ edm_version }}'
+description: >-
+  Production asset hierarchy - fields, wells and wellbores as a single CogniteAsset
+  hierarchy, with licensing identity, drilling context and completion detail. The one
+  CogniteAsset implementer of WellProduction_DOM.
+implements:
+  - { space: cdf_cdm, externalId: CogniteAsset, version: v1, type: view }
+properties:
+  name:
+    container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
+    containerPropertyIdentifier: name
+    name: Name
+    description: Common operational name of the asset, for example DRA-A1.
+  description:
+    container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
+    containerPropertyIdentifier: description
+    name: Description
+    description: Free-text description of the asset.
+  labels:
+    container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
+    containerPropertyIdentifier: tags
+    name: Labels
+    description: Text labels on the asset. Aliased from CogniteDescribable.tags to avoid
+      confusion with the direct relations on this view.
+  aliases:
+    container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
+    containerPropertyIdentifier: aliases
+    name: Aliases
+    description: Alternative names the asset is known by in source systems.
+  sourceId:
+    container: { space: cdf_cdm, externalId: CogniteSourceable, type: container }
+    containerPropertyIdentifier: sourceId
+    name: Source ID
+    description: Identifier of the asset in the production accounting source system.
+  sourceContext:
+    container: { space: cdf_cdm, externalId: CogniteSourceable, type: container }
+    containerPropertyIdentifier: sourceContext
+    name: Source context
+    description: Context within the source system that qualifies the source ID.
+  sourceCreatedTime:
+    container: { space: cdf_cdm, externalId: CogniteSourceable, type: container }
+    containerPropertyIdentifier: sourceCreatedTime
+    name: Source created time
+    description: Time the asset record was created in the source system.
+  parent:
+    container: { space: cdf_cdm, externalId: CogniteAsset, type: container }
+    containerPropertyIdentifier: assetHierarchy_parent
+    name: Parent
+    description: Parent of this asset - a well's parent is its field, a wellbore's is its well.
+    source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+  root:
+    container: { space: cdf_cdm, externalId: CogniteAsset, type: container }
+    containerPropertyIdentifier: assetHierarchy_root
+    name: Root
+    description: Automatically maintained reference to the field at the top of this hierarchy.
+    source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+  path:
+    container: { space: cdf_cdm, externalId: CogniteAsset, type: container }
+    containerPropertyIdentifier: assetHierarchy_path
+    name: Path
+    description: Ordered ancestor chain from the root field down to this asset, enabling
+      subtree filtering across the whole hierarchy.
+    source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+  type:
+    container: { space: cdf_cdm, externalId: CogniteAsset, type: container }
+    containerPropertyIdentifier: type
+    name: Asset type
+    description: CDM asset type distinguishing field, well and wellbore nodes.
+    source: { space: cdf_cdm, externalId: CogniteAssetType, version: v1, type: view }
+  assetType:
+    container: { space: '{{ edm_space }}', externalId: Asset, type: container }
+    containerPropertyIdentifier: assetType
+    name: Asset level
+    description: Level of this node in the production hierarchy - field, well or wellbore.
+  wellId:
+    container: { space: '{{ edm_space }}', externalId: Asset, type: container }
+    containerPropertyIdentifier: wellId
+    name: Well ID
+    description: Unique well identifier (UWI) issued by the licensing authority.
+  fieldCode:
+    container: { space: '{{ edm_space }}', externalId: Asset, type: container }
+    containerPropertyIdentifier: fieldCode
+    name: Field code
+    description: Short operator code for the producing field, for example FLD-DRA.
+  wellType:
+    container: { space: '{{ edm_space }}', externalId: Asset, type: container }
+    containerPropertyIdentifier: wellType
+    name: Well type
+    description: Operational role of the well, for example producer or water injector.
+  spudDate:
+    container: { space: '{{ edm_space }}', externalId: Asset, type: container }
+    containerPropertyIdentifier: spudDate
+    name: Spud date
+    description: Date on which drilling of the well commenced.
+  waterDepthM:
+    container: { space: '{{ edm_space }}', externalId: Asset, type: container }
+    containerPropertyIdentifier: waterDepthM
+    name: Water depth (m)
+    description: Water depth at the surface location, in metres.
+  totalDepthM:
+    container: { space: '{{ edm_space }}', externalId: Asset, type: container }
+    containerPropertyIdentifier: totalDepthM
+    name: Total depth (m)
+    description: Measured total depth of the wellbore, in metres.
+  completionType:
+    container: { space: '{{ edm_space }}', externalId: Asset, type: container }
+    containerPropertyIdentifier: completionType
+    name: Completion type
+    description: Completion design of the wellbore, for example cased hole or open hole.
+  children:
+    connectionType: multi_reverse_direct_relation
+    name: Children
+    description: Assets directly below this one in the hierarchy - a field's wells, a well's wellbores.
+    source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+    through:
+      source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+      identifier: parent
+  interventions:
+    connectionType: multi_reverse_direct_relation
+    name: Interventions
+    description: Well interventions raised against this asset as their primary asset.
+    source: { space: '{{ edm_space }}', externalId: WellIntervention, version: '{{ edm_version }}', type: view }
+    through:
+      source: { space: '{{ edm_space }}', externalId: WellIntervention, version: '{{ edm_version }}', type: view }
+      identifier: mainAsset

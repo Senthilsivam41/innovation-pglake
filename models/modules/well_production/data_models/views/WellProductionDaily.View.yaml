@@ -1,0 +1,92 @@
+space: '{{ sdm_space }}'
+externalId: WellProductionDaily
+name: Well production daily
+version: '{{ sdm_version }}'
+description: >-
+  Daily production per wellbore with well and field context denormalised onto every row,
+  so a dashboard reads a day of production in a single query with no traversal.
+properties:
+  productionDate:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: productionDate
+    name: Production date
+    description: Calendar day (UTC) the readings were aggregated over.
+  wellbore:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: wellbore
+    name: Wellbore
+    description: The wellbore this daily aggregate belongs to.
+    source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+  well:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: well
+    name: Well
+    description: Parent well of the wellbore, denormalised to avoid a traversal hop.
+    source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+  field:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: field
+    name: Field
+    description: Producing field of the well, denormalised to avoid two traversal hops.
+    source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+  wellName:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: wellName
+    name: Well name
+    description: Operational name of the parent well, recomputed from the enterprise model on every build.
+  fieldName:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: fieldName
+    name: Field name
+    description: Name of the producing field, recomputed from the enterprise model on every build.
+  oilBbl:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: oilBbl
+    name: Oil volume (bbl)
+    description: Oil volume produced over the day, in barrels.
+  gasMscf:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: gasMscf
+    name: Gas volume (Mscf)
+    description: Gas volume produced over the day, in thousand standard cubic feet.
+  waterBbl:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: waterBbl
+    name: Water volume (bbl)
+    description: Produced water volume over the day, in barrels.
+  waterCutPct:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: waterCutPct
+    name: Water cut (%)
+    description: Water as a percentage of total produced liquid over the day.
+  gasOilRatio:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: gasOilRatio
+    name: Gas-oil ratio (scf/bbl)
+    description: Produced gas per barrel of oil over the day, in standard cubic feet per barrel.
+  avgTubingHeadPressureBar:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: avgTubingHeadPressureBar
+    name: Average tubing head pressure (bar)
+    description: Mean tubing head pressure across the day's readings, in bar.
+  uptimeHours:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: uptimeHours
+    name: Uptime (hours)
+    description: Hours in the day with a good-quality metering reading.
+  readingCount:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: readingCount
+    name: Reading count
+    description: Number of metering readings aggregated into this row.
+  interventionCount:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: interventionCount
+    name: Intervention count
+    description: Well interventions active on the parent well during this day, derived by
+      traversing the enterprise model at build time.
+  computedAt:
+    container: { space: '{{ sdm_space }}', externalId: WellProductionDaily, type: container }
+    containerPropertyIdentifier: computedAt
+    name: Computed at
+    description: Timestamp at which the analytical job produced this row.

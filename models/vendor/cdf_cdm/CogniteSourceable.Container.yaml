@@ -1,0 +1,37 @@
+space: cdf_cdm
+externalId: CogniteSourceable
+name: Cognite sourceable
+description: Cognite core feature recording where an instance came from in a source system.
+usedFor: node
+properties:
+  sourceId:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Source ID
+    description: Identifier from the source system.
+  sourceContext:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Source context
+    description: Context of the source id. For systems where the source id is globally unique,
+      the source is more than sufficient to identify the object.
+  sourceCreatedTime:
+    type: { list: false, type: timestamp }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Source created time
+    description: When the instance was created in the source system.
+  sourceUpdatedTime:
+    type: { list: false, type: timestamp }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Source updated time
+    description: When the instance was last updated in the source system.
+constraints: {}
+indexes: {}

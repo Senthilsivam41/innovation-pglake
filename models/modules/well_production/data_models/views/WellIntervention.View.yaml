@@ -1,0 +1,64 @@
+space: '{{ edm_space }}'
+externalId: WellIntervention
+name: Well intervention
+version: '{{ edm_version }}'
+description: >-
+  Maintenance and remedial work carried out on a well, including schedule, status,
+  priority and the expected production uplift.
+implements:
+  - { space: cdf_idm, externalId: CogniteMaintenanceOrder, version: v1, type: view }
+properties:
+  name:
+    container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
+    containerPropertyIdentifier: name
+    name: Name
+    description: Short title of the intervention, for example Draugen A-1 ESP replacement.
+  description:
+    container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
+    containerPropertyIdentifier: description
+    name: Description
+    description: Scope of work for the intervention.
+  startTime:
+    container: { space: cdf_cdm, externalId: CogniteSchedulable, type: container }
+    containerPropertyIdentifier: startTime
+    name: Start time
+    description: Actual time work on the intervention started.
+  endTime:
+    container: { space: cdf_cdm, externalId: CogniteSchedulable, type: container }
+    containerPropertyIdentifier: endTime
+    name: End time
+    description: Actual time work on the intervention finished.
+  scheduledStartTime:
+    container: { space: cdf_cdm, externalId: CogniteSchedulable, type: container }
+    containerPropertyIdentifier: scheduledStartTime
+    name: Scheduled start time
+    description: Planned start time of the intervention.
+  status:
+    container: { space: cdf_idm, externalId: CogniteMaintenanceOrder, type: container }
+    containerPropertyIdentifier: status
+    name: Status
+    description: Workflow status of the intervention, for example planned, active or complete.
+  priority:
+    container: { space: cdf_idm, externalId: CogniteMaintenanceOrder, type: container }
+    containerPropertyIdentifier: priority
+    name: Priority
+    description: Numeric priority of the intervention, lower is more urgent.
+  # Overridden from cdf_idm:CogniteMaintenanceOrder so the reverse relation Asset.interventions
+  # resolves through a property whose source is this model's Asset view rather than the
+  # CDM ancestor CogniteAsset (NEAT-DMS-CONNECTIONS-REVERSE-008/009).
+  mainAsset:
+    container: { space: cdf_idm, externalId: CogniteMaintenanceOrder, type: container }
+    containerPropertyIdentifier: mainAsset
+    name: Main asset
+    description: The well this intervention was raised against.
+    source: { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view }
+  interventionType:
+    container: { space: '{{ edm_space }}', externalId: WellIntervention, type: container }
+    containerPropertyIdentifier: interventionType
+    name: Intervention type
+    description: Category of intervention, for example ESP replacement or coiled tubing cleanout.
+  estimatedUpliftBpd:
+    container: { space: '{{ edm_space }}', externalId: WellIntervention, type: container }
+    containerPropertyIdentifier: estimatedUpliftBpd
+    name: Estimated uplift (bpd)
+    description: Expected production gain from the intervention, in barrels per day.

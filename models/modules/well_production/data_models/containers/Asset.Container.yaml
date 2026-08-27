@@ -1,0 +1,75 @@
+space: '{{ edm_space }}'
+externalId: Asset
+name: Asset
+description: Well production asset hierarchy node - a field, a well, or a wellbore.
+usedFor: node
+properties:
+  assetType:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: false
+    immutable: false
+    autoIncrement: false
+    name: Asset type
+    description: Level of this node in the production hierarchy - field, well or wellbore.
+  wellId:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Well ID
+    description: Unique well identifier (UWI) issued by the licensing authority.
+  fieldCode:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Field code
+    description: Short operator code for the producing field, for example FLD-DRA.
+  wellType:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Well type
+    description: Operational role of the well, for example producer or water injector.
+  spudDate:
+    type: { list: false, type: date }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Spud date
+    description: Date on which drilling of the well commenced.
+  waterDepthM:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Water depth (m)
+    description: Water depth at the surface location, in metres.
+  totalDepthM:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Total depth (m)
+    description: Measured total depth of the wellbore, in metres.
+  completionType:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Completion type
+    description: Completion design of the wellbore, for example cased hole or open hole.
+constraints:
+  assetPresent:
+    constraintType: requires
+    require: { space: cdf_cdm, externalId: CogniteAsset, type: container }
+indexes:
+  assetType:
+    indexType: btree
+    properties: [assetType]
+    cursorable: false
+  wellId:
+    indexType: btree
+    properties: [wellId]
+    cursorable: true

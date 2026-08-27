@@ -1,0 +1,36 @@
+space: cdf_cdm
+externalId: CogniteDescribable
+name: Cognite describable
+description: Cognite core feature giving an instance a name, description, tags and aliases.
+usedFor: node
+properties:
+  name:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Name
+    description: Name of the instance.
+  description:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Description
+    description: Description of the instance.
+  tags:
+    type: { list: true, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Tags
+    description: Text based labels for generic use, limited to 1000 per instance.
+  aliases:
+    type: { list: true, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Aliases
+    description: Alternative names for the node.
+constraints: {}
+indexes: {}

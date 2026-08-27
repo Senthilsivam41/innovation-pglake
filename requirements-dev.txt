@@ -1,0 +1,7 @@
+# ponytail: build-time-only dependencies; never enter a shipped image.
+# pyyaml  - scripts/compile-model.py parses Cognite Toolkit YAML. We do not own that
+#           format, so a hand-rolled subset parser would risk breaking the one thing
+#           this demo asserts: that the files are genuine Toolkit YAML.
+# asyncpg - load_test.py has always imported it; it was in no requirements file.
+pyyaml==6.0.2
+asyncpg==0.30.0

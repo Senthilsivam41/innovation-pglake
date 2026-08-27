@@ -1,0 +1,3 @@
+space: '{{ edm_space }}'
+name: Well production DM DOM
+description: Enterprise schema space holding the well production domain model.

@@ -1,0 +1,136 @@
+space: '{{ sdm_space }}'
+externalId: WellProductionDaily
+name: Well production daily
+description: Daily production aggregate per wellbore, denormalised for one-shot dashboard reads.
+usedFor: node
+properties:
+  productionDate:
+    type: { list: false, type: date }
+    nullable: false
+    immutable: false
+    autoIncrement: false
+    name: Production date
+    description: Calendar day (UTC) the readings were aggregated over.
+  wellbore:
+    type: { list: false, type: direct }
+    nullable: false
+    immutable: false
+    autoIncrement: false
+    name: Wellbore
+    description: The wellbore this daily aggregate belongs to.
+  well:
+    type: { list: false, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Well
+    description: Parent well of the wellbore, denormalised to avoid a traversal hop.
+  field:
+    type: { list: false, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Field
+    description: Producing field of the well, denormalised to avoid two traversal hops.
+  wellName:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Well name
+    description: Operational name of the parent well, copied from the enterprise model at build time.
+  fieldName:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Field name
+    description: Name of the producing field, copied from the enterprise model at build time.
+  oilBbl:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Oil volume (bbl)
+    description: Oil volume produced over the day, in barrels.
+  gasMscf:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Gas volume (Mscf)
+    description: Gas volume produced over the day, in thousand standard cubic feet.
+  waterBbl:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Water volume (bbl)
+    description: Produced water volume over the day, in barrels.
+  waterCutPct:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Water cut (%)
+    description: Water as a percentage of total produced liquid over the day.
+  gasOilRatio:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Gas-oil ratio (scf/bbl)
+    description: Produced gas per barrel of oil over the day, in standard cubic feet per barrel.
+  avgTubingHeadPressureBar:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Average tubing head pressure (bar)
+    description: Mean tubing head pressure across the day's readings, in bar.
+  uptimeHours:
+    type: { list: false, type: float64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Uptime (hours)
+    description: Hours in the day with a good-quality metering reading.
+  readingCount:
+    type: { list: false, type: int64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Reading count
+    description: Number of metering readings aggregated into this row.
+  interventionCount:
+    type: { list: false, type: int64 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Intervention count
+    description: Well interventions active on the parent well during this day.
+  computedAt:
+    type: { list: false, type: timestamp }
+    nullable: false
+    immutable: false
+    autoIncrement: false
+    name: Computed at
+    description: Timestamp at which the analytical job produced this row.
+constraints: {}
+indexes:
+  productionDate:
+    indexType: btree
+    properties: [productionDate]
+    cursorable: true
+  wellbore:
+    indexType: btree
+    properties: [wellbore]
+    cursorable: false
+  well:
+    indexType: btree
+    properties: [well]
+    cursorable: false
+  field:
+    indexType: btree
+    properties: [field]
+    cursorable: false

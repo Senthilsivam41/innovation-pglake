@@ -1,0 +1,22 @@
+space: cdf_cdm
+externalId: CogniteAssetType
+name: Cognite asset type
+description: Cognite core type classifying assets, for example field, well or wellbore.
+usedFor: node
+properties:
+  code:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Code
+    description: A unique identifier for the type of asset.
+  assetClass:
+    type: { list: false, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Asset class
+    description: Specifies the class the type belongs to. It's a direct relation to CogniteAssetClass.
+constraints: {}
+indexes: {}

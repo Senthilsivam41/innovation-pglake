@@ -1,0 +1,52 @@
+space: cdf_cdm
+externalId: CogniteAsset
+name: Cognite asset
+description: Cognite core type representing a physical or functional asset, and the
+  hierarchy it belongs to.
+usedFor: node
+properties:
+  assetHierarchy_parent:
+    type: { list: false, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Parent
+    description: The parent of the asset.
+  assetHierarchy_root:
+    type: { list: false, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Root
+    description: An automatically updated reference to the top-level asset of the hierarchy.
+  assetHierarchy_path:
+    type: { list: true, maxListSize: 300, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Path
+    description: An automatically updated ordered list of this asset's ancestors, starting
+      with the root asset. Enables subtree filtering to find all assets under a parent.
+  assetHierarchy_pathLastUpdatedTime:
+    type: { list: false, type: timestamp }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Path last updated time
+    description: The last time the path property was updated.
+  assetClass:
+    type: { list: false, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Asset class
+    description: Specifies the class of the asset. It's a direct relation to CogniteAssetClass.
+  type:
+    type: { list: false, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Asset type
+    description: Specifies the type of the asset. It's a direct relation to CogniteAssetType.
+constraints: {}
+indexes: {}

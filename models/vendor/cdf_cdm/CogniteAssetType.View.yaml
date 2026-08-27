@@ -1,0 +1,23 @@
+space: cdf_cdm
+externalId: CogniteAssetType
+name: Asset type
+version: v1
+description: Classification of an asset - in this model, field, well or wellbore.
+implements:
+  - { space: cdf_cdm, externalId: CogniteDescribable, version: v1, type: view }
+properties:
+  name:
+    container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
+    containerPropertyIdentifier: name
+    name: Name
+    description: Human readable name of the asset type.
+  description:
+    container: { space: cdf_cdm, externalId: CogniteDescribable, type: container }
+    containerPropertyIdentifier: description
+    name: Description
+    description: Description of what this asset type represents.
+  code:
+    container: { space: cdf_cdm, externalId: CogniteAssetType, type: container }
+    containerPropertyIdentifier: code
+    name: Code
+    description: A unique identifier for the type of asset.

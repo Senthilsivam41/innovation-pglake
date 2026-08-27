@@ -1,0 +1,43 @@
+space: cdf_idm
+externalId: CogniteMaintenanceOrder
+name: Cognite maintenance order
+description: Cognite industrial type representing a maintenance order raised against an asset.
+usedFor: node
+properties:
+  mainAsset:
+    type: { list: false, type: direct }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Main asset
+    description: The primary asset the maintenance order was raised against.
+  type:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Type
+    description: Source system defined type of the maintenance order.
+  status:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Status
+    description: Source system defined status of the maintenance order.
+  priority:
+    type: { list: false, type: int32 }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Priority
+    description: Numeric priority of the maintenance order, lower is more urgent.
+  priorityDescription:
+    type: { list: false, collation: ucs_basic, type: text }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Priority description
+    description: Human readable description of the priority.
+constraints: {}
+indexes: {}

@@ -1,0 +1,36 @@
+space: cdf_cdm
+externalId: CogniteSchedulable
+name: Cognite schedulable
+description: Cognite core feature giving an instance planned and actual start and end times.
+usedFor: node
+properties:
+  startTime:
+    type: { list: false, type: timestamp }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Start time
+    description: The actual start time of an activity (or similar that extends this).
+  endTime:
+    type: { list: false, type: timestamp }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: End time
+    description: The actual end time of an activity (or similar that extends this).
+  scheduledStartTime:
+    type: { list: false, type: timestamp }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Scheduled start time
+    description: The planned start time of an activity (or similar that extends this).
+  scheduledEndTime:
+    type: { list: false, type: timestamp }
+    nullable: true
+    immutable: false
+    autoIncrement: false
+    name: Scheduled end time
+    description: The planned end time of an activity (or similar that extends this).
+constraints: {}
+indexes: {}

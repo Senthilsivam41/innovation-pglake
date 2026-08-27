@@ -1,0 +1,16 @@
+environment:
+  name: dev
+  project: aetherlake-dev
+  validation-type: dev
+  selected:
+    - modules/well_production
+
+variables:
+  modules:
+    well_production:
+      # Schema spaces hold the model; the instance space holds the data.
+      edm_space: dm_dom_well_production
+      sdm_space: dm_sol_production_analytics
+      instance_space: inst_well_production
+      edm_version: v1
+      sdm_version: v1

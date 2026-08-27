@@ -1,0 +1,9 @@
+space: '{{ edm_space }}'
+externalId: WellProduction_DOM
+name: Well production DOM
+description: Enterprise model for oil and gas well production - asset hierarchy and interventions.
+version: '{{ edm_version }}'
+views:
+  - { space: '{{ edm_space }}', externalId: Asset, version: '{{ edm_version }}', type: view, name: Asset }
+  - { space: '{{ edm_space }}', externalId: WellIntervention, version: '{{ edm_version }}', type: view, name: Well intervention }
+  - { space: cdf_cdm, externalId: CogniteAssetType, version: v1, type: view, name: Asset type }
