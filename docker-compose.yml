@@ -88,6 +88,7 @@ services:
       APP_PASSWORD: ${APP_PASSWORD:-change-me-app-local-only}
       DELTA_CRON: ${DELTA_CRON:-*/5 * * * *}
       VACUUM_CRON: ${VACUUM_CRON:-17 * * * *}
+      SDM_CRON: ${SDM_CRON:-*/10 * * * *}
       DELTA_BATCH_SIZE: ${DELTA_BATCH_SIZE:-10000}
     depends_on:
       pgduck:

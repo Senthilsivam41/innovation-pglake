@@ -11,6 +11,7 @@ set -Eeuo pipefail
 : "${S3_PREFIX:=warehouse}"
 : "${DELTA_CRON:=*/5 * * * *}"
 : "${VACUUM_CRON:=17 * * * *}"
+: "${SDM_CRON:=*/10 * * * *}"
 : "${DELTA_BATCH_SIZE:=10000}"
 
 base=/home/postgres
@@ -59,11 +60,15 @@ if [[ ! -f "$marker" ]]; then
     --set=app_password="$APP_PASSWORD" \
     -f /docker-entrypoint-initdb.d/00-bootstrap.sql
 
+  # The second digit is [1-9] so 00-bootstrap.sql, already run above against the postgres
+  # database, is not re-run here against the application database. The trap: a file named
+  # 10-, 20- or 30- would be SILENTLY SKIPPED. Numbering runs 01-09 then 11-19.
   for sql in /docker-entrypoint-initdb.d/[0-9][1-9]-*.sql; do
     "$pg_bin/psql" -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
       --set=app_user="$APP_USER" \
       --set=delta_cron="$DELTA_CRON" \
       --set=vacuum_cron="$VACUUM_CRON" \
+      --set=sdm_cron="$SDM_CRON" \
       --set=delta_batch_size="$DELTA_BATCH_SIZE" \
       -f "$sql"
   done
