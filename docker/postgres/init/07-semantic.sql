@@ -15,14 +15,14 @@ CREATE SCHEMA IF NOT EXISTS semantic;
 REVOKE ALL ON SCHEMA semantic FROM PUBLIC;
 GRANT USAGE ON SCHEMA semantic TO :"app_user";
 
-CREATE TABLE semantic.spaces (
+CREATE TABLE IF NOT EXISTS semantic.spaces (
     space       text PRIMARY KEY,
     kind        text NOT NULL CHECK (kind IN ('schema', 'instance')),
     name        text,
     description text
 ) USING heap;
 
-CREATE TABLE semantic.containers (
+CREATE TABLE IF NOT EXISTS semantic.containers (
     space       text NOT NULL REFERENCES semantic.spaces(space),
     external_id text NOT NULL,
     used_for    text NOT NULL CHECK (used_for IN ('node', 'record')),
@@ -33,7 +33,7 @@ CREATE TABLE semantic.containers (
     PRIMARY KEY (space, external_id)
 ) USING heap;
 
-CREATE TABLE semantic.container_properties (
+CREATE TABLE IF NOT EXISTS semantic.container_properties (
     space        text NOT NULL,
     container    text NOT NULL,
     identifier   text NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE semantic.container_properties (
     FOREIGN KEY (space, container) REFERENCES semantic.containers(space, external_id) ON DELETE CASCADE
 ) USING heap;
 
-CREATE TABLE semantic.views (
+CREATE TABLE IF NOT EXISTS semantic.views (
     space           text NOT NULL REFERENCES semantic.spaces(space),
     external_id     text NOT NULL,
     version         text NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE semantic.views (
     FOREIGN KEY (anchor_space, anchor_container) REFERENCES semantic.containers(space, external_id)
 ) USING heap;
 
-CREATE TABLE semantic.view_implements (
+CREATE TABLE IF NOT EXISTS semantic.view_implements (
     space              text NOT NULL,
     external_id        text NOT NULL,
     version            text NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE semantic.view_implements (
 
 -- One row per EFFECTIVE property. The compiler resolves inheritance once at build time, so
 -- the resolver never walks the implements graph: every property lookup is a single PK probe.
-CREATE TABLE semantic.view_properties (
+CREATE TABLE IF NOT EXISTS semantic.view_properties (
     space       text NOT NULL,
     external_id text NOT NULL,
     version     text NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE semantic.view_properties (
     CHECK ((kind LIKE '%reverse%') = (through_identifier IS NOT NULL))
 ) USING heap;
 
-CREATE TABLE semantic.data_models (
+CREATE TABLE IF NOT EXISTS semantic.data_models (
     space       text NOT NULL REFERENCES semantic.spaces(space),
     external_id text NOT NULL,
     version     text NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE semantic.data_models (
     PRIMARY KEY (space, external_id, version)
 ) USING heap;
 
-CREATE TABLE semantic.data_model_views (
+CREATE TABLE IF NOT EXISTS semantic.data_model_views (
     space            text NOT NULL,
     external_id      text NOT NULL,
     version          text NOT NULL,
@@ -149,8 +149,25 @@ AS $$
       AND t.table_name = split_part(p_relation, '.', 2)
 $$;
 
+-- The Iceberg snapshot behind a view. A compiled view is a PostgreSQL view and therefore not
+-- in iceberg_tables; the snapshot lives on its anchor container, which is the table the view
+-- scans first.
+CREATE OR REPLACE FUNCTION semantic.view_snapshot(p_space text, p_view text, p_version text)
+RETURNS TABLE (relation text, snapshot_id bigint)
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog, semantic
+AS $$
+    SELECT c.relation, semantic.snapshot_id(c.relation)
+    FROM semantic.views v
+    JOIN semantic.containers c
+      ON c.space = v.anchor_space AND c.external_id = v.anchor_container
+    WHERE v.space = p_space AND v.external_id = p_view AND v.version = p_version
+$$;
+
 GRANT SELECT ON ALL TABLES IN SCHEMA semantic TO :"app_user";
 GRANT EXECUTE ON FUNCTION semantic.snapshot_id(text) TO :"app_user";
+GRANT EXECUTE ON FUNCTION semantic.view_snapshot(text, text, text) TO :"app_user";
 
 
 -- ---------------------------------------------------------------------------- resolver
@@ -185,7 +202,7 @@ BEGIN
       AND version = p_version AND identifier = p_identifier;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'property %L is not declared on view %s:%s/%s',
+        RAISE EXCEPTION 'property % is not declared on view %:%/%',
                         p_identifier, p_space, p_view, p_version
             USING ERRCODE = 'invalid_parameter_value',
                   HINT = 'The semantic model is the contract; only declared properties are queryable.';
@@ -211,7 +228,7 @@ BEGIN
     EXECUTE format('SELECT quote_literal(%L::%s::text)', p_value #>> '{}', p_pg_type) INTO quoted;
     RETURN quoted || '::' || p_pg_type;
 EXCEPTION WHEN others THEN
-    RAISE EXCEPTION 'value % is not valid for type %s', p_value, p_pg_type
+    RAISE EXCEPTION 'value % is not valid for type %', p_value, p_pg_type
         USING ERRCODE = 'invalid_parameter_value';
 END
 $$;
@@ -292,7 +309,7 @@ BEGIN
 
     path := body -> 'property';
     IF path IS NULL OR jsonb_typeof(path) <> 'array' OR jsonb_array_length(path) = 0 THEN
-        RAISE EXCEPTION 'filter operator %L needs a property path', op
+        RAISE EXCEPTION 'filter operator % needs a property path', op
             USING ERRCODE = 'invalid_parameter_value';
     END IF;
 
@@ -300,7 +317,7 @@ BEGIN
     prop := semantic.column_for(p_space, p_view, p_version,
                                 path ->> (jsonb_array_length(path) - 1));
     IF prop.kind NOT IN ('primitive', 'direct') THEN
-        RAISE EXCEPTION 'cannot filter on relation property %L; traverse it instead', prop.identifier
+        RAISE EXCEPTION 'cannot filter on relation property %; traverse it instead', prop.identifier
             USING ERRCODE = 'invalid_parameter_value';
     END IF;
     col := format('%I.%I', p_alias, prop.column_name);
@@ -322,7 +339,7 @@ BEGIN
         RETURN format('%s @> %s', col, semantic.lit_array(body -> 'values', prop.pg_type));
     END IF;
 
-    RAISE EXCEPTION 'unsupported filter operator %L', op
+    RAISE EXCEPTION 'unsupported filter operator %', op
         USING ERRCODE = 'invalid_parameter_value';
 END
 $$;
@@ -375,13 +392,15 @@ DECLARE
     started      timestamptz := clock_timestamp();
     result       jsonb;
     v_properties jsonb;
+    anchor_relation text;
+    anchor_snapshot bigint;
 BEGIN
     SELECT k INTO stray
     FROM jsonb_object_keys(request) k
     WHERE k <> ALL (known_keys)
     LIMIT 1;
     IF stray IS NOT NULL THEN
-        RAISE EXCEPTION 'unknown request key %L', stray
+        RAISE EXCEPTION 'unknown request key %', stray
             USING ERRCODE = 'invalid_parameter_value',
                   HINT = 'Supported keys: ' || array_to_string(known_keys, ', ');
     END IF;
@@ -390,13 +409,16 @@ BEGIN
     FROM semantic.views
     WHERE space = v_space AND external_id = v_view AND version = v_version;
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'view %s:%s/%s is not in the model', v_space, v_view, v_version
+        RAISE EXCEPTION 'view %:%/% is not in the model', v_space, v_view, v_version
             USING ERRCODE = 'invalid_parameter_value';
     END IF;
+    SELECT s.relation, s.snapshot_id INTO anchor_relation, anchor_snapshot
+      FROM semantic.view_snapshot(v_space, v_view, v_version) s;
     sources := sources || jsonb_build_object(
         'view', format('%s:%s/%s', v_space, v_view, v_version),
         'relation', view_row.relation,
-        'snapshotId', semantic.snapshot_id(view_row.relation));
+        'table', anchor_relation,
+        'snapshotId', anchor_snapshot);
     seen_tables := seen_tables || view_row.relation;
 
     -- Projection. Default to every scalar and direct property the view declares; an explicit
@@ -415,7 +437,7 @@ BEGIN
     LOOP
         prop := semantic.column_for(v_space, v_view, v_version, identifier);
         IF prop.kind IN ('multi_reverse_direct_relation', 'single_reverse_direct_relation') THEN
-            RAISE EXCEPTION 'property %L is a relation; list it under "traverse", not "properties"',
+            RAISE EXCEPTION 'property % is a relation; list it under "traverse", not "properties"',
                             identifier
                 USING ERRCODE = 'invalid_parameter_value';
         END IF;
@@ -429,7 +451,7 @@ BEGIN
         identifier := spec ->> 'property';
         prop := semantic.column_for(v_space, v_view, v_version, identifier);
         IF prop.kind = 'primitive' THEN
-            RAISE EXCEPTION 'property %L is a scalar and cannot be traversed', identifier
+            RAISE EXCEPTION 'property % is a scalar and cannot be traversed', identifier
                 USING ERRCODE = 'invalid_parameter_value';
         END IF;
 
@@ -438,7 +460,7 @@ BEGIN
         WHERE space = prop.source_space AND external_id = prop.source_external_id
           AND version = prop.source_version;
         IF NOT FOUND THEN
-            RAISE EXCEPTION 'traversal %L targets view %s:%s/%s, which is not in the model',
+            RAISE EXCEPTION 'traversal % targets view %:%/%, which is not in the model',
                             identifier, prop.source_space, prop.source_external_id, prop.source_version
                 USING ERRCODE = 'invalid_parameter_value';
         END IF;
@@ -454,7 +476,7 @@ BEGIN
                                                    target_row.version, e #>> '{}') c
         LOOP
             IF child.kind NOT IN ('primitive', 'direct') THEN
-                RAISE EXCEPTION 'nested traversal %L is not supported; issue a second query',
+                RAISE EXCEPTION 'nested traversal % is not supported; issue a second query',
                                 child.identifier
                     USING ERRCODE = 'invalid_parameter_value';
             END IF;
@@ -462,10 +484,14 @@ BEGIN
         END LOOP;
 
         IF NOT (target_row.relation = ANY (seen_tables)) THEN
+            SELECT s.relation, s.snapshot_id INTO anchor_relation, anchor_snapshot
+              FROM semantic.view_snapshot(target_row.space, target_row.external_id,
+                                          target_row.version) s;
             sources := sources || jsonb_build_object(
                 'view', format('%s:%s/%s', target_row.space, target_row.external_id, target_row.version),
                 'relation', target_row.relation,
-                'snapshotId', semantic.snapshot_id(target_row.relation));
+                'table', anchor_relation,
+                'snapshotId', anchor_snapshot);
             seen_tables := seen_tables || target_row.relation;
         END IF;
 
@@ -473,7 +499,7 @@ BEGIN
             -- Forward: this row stores the target's external id. One-to-one, so no aggregate.
             join_parts := join_parts || format(
                 E'LEFT JOIN LATERAL (\n'
-                 '    SELECT jsonb_build_object(%L) AS item\n'
+                 '    SELECT jsonb_build_object(%s) AS item\n'
                  '    FROM %s %I\n'
                  '    WHERE %I.space = t.space AND %I.node_external_id = t.%I\n'
                  ') %I ON true',
@@ -493,8 +519,8 @@ BEGIN
                  '           ORDER BY x.node_external_id LIMIT %s) %I\n'
                  ') %I ON true',
                 CASE WHEN prop.kind = 'single_reverse_direct_relation'
-                     THEN format('jsonb_build_object(%L)', array_to_string(child_parts, ', '))
-                     ELSE format('jsonb_agg(jsonb_build_object(%L) ORDER BY %I.node_external_id)',
+                     THEN format('jsonb_build_object(%s)', array_to_string(child_parts, ', '))
+                     ELSE format('jsonb_agg(jsonb_build_object(%s) ORDER BY %I.node_external_id)',
                                  array_to_string(child_parts, ', '), alias)
                 END,
                 target_row.relation, forward.column_name, child_limit, alias, alias || '_j');

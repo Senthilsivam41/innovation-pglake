@@ -336,10 +336,19 @@ def sdm_build():
             )
         else:
             cursor.execute("CALL aetherlake.build_well_production_daily()")
+
+        # pg_lake publishes the Iceberg snapshot at COMMIT, so the build cannot observe its own
+        # result. Commit first, then read the snapshot it produced.
+        conn.commit()
+
         cursor.execute(
             """
             SELECT build_id, target, window_from, window_to, source_views,
-                   snapshot_before, snapshot_after, rows_written, duration_ms, built_at
+                   snapshot_before,
+                   coalesce(snapshot_after,
+                            semantic.snapshot_id(
+                                'dm_sol_production_analytics.well_production_daily')) AS snapshot_after,
+                   rows_written, duration_ms, built_at
             FROM aetherlake.sdm_build_log
             ORDER BY build_id DESC
             LIMIT 1
@@ -357,7 +366,11 @@ def lineage():
         cursor.execute(
             """
             SELECT build_id, target, window_from, window_to, source_views,
-                   snapshot_before, snapshot_after, rows_written, duration_ms, built_at
+                   snapshot_before,
+                   coalesce(snapshot_after,
+                            semantic.snapshot_id(
+                                'dm_sol_production_analytics.well_production_daily')) AS snapshot_after,
+                   rows_written, duration_ms, built_at
             FROM aetherlake.sdm_build_log
             ORDER BY build_id DESC
             LIMIT %s
@@ -375,7 +388,7 @@ def rejected_by_model(error):
     Flask dispatches to the most specific handler, so this coexists with the generic
     psycopg.Error handler below.
     """
-    return jsonify(error=error.diag.message_primary, hint=error.diag.hint), 400
+    return jsonify(error=error.diag.message_primary, hint=error.diag.message_hint), 400
 
 
 @app.errorhandler(psycopg.Error)

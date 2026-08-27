@@ -11,7 +11,7 @@
 -- usedFor: record container, which by design has no view: the semantic layer covers the graph,
 -- and the job reaches below it into the record store.
 
-CREATE TABLE aetherlake.sdm_build_log (
+CREATE TABLE IF NOT EXISTS aetherlake.sdm_build_log (
     build_id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     target           text        NOT NULL,
     window_from      date        NOT NULL,
@@ -36,7 +36,6 @@ AS $$
 DECLARE
     started       timestamptz := clock_timestamp();
     snap_before   bigint;
-    snap_after    bigint;
     src_snapshots jsonb;
     written       bigint;
 BEGIN
@@ -53,6 +52,16 @@ BEGIN
      WHERE t.table_namespace IN ('dm_dom_well_production', 'cdf_cdm', 'cdf_idm');
 
     snap_before := semantic.snapshot_id('dm_sol_production_analytics.well_production_daily');
+
+    -- pg_lake publishes an Iceberg snapshot at COMMIT, so a transaction can only ever see the
+    -- snapshot it started from - this build cannot observe its own result. Each run therefore
+    -- closes out the previous one: the snapshot we are starting from is exactly what the last
+    -- build produced. The log is self-closing, and it works identically from cron, psql and
+    -- the console.
+    UPDATE aetherlake.sdm_build_log
+       SET snapshot_after = snap_before
+     WHERE snapshot_after IS NULL
+       AND target = 'dm_sol_production_analytics:WellProductionDaily/v1';
 
     -- pg_lake supports DELETE on Iceberg tables but not MERGE or ON CONFLICT, so
     -- delete-then-insert over a bounded window is the idempotency primitive.
@@ -114,10 +123,6 @@ BEGIN
 
     GET DIAGNOSTICS written = ROW_COUNT;
 
-    -- Readable in this transaction: pg_lake commits the iceberg_tables catalog row
-    -- transactionally, so the delete and insert have already advanced it.
-    snap_after := semantic.snapshot_id('dm_sol_production_analytics.well_production_daily');
-
     INSERT INTO aetherlake.sdm_build_log (
         target, window_from, window_to, source_views, source_snapshots,
         snapshot_before, snapshot_after, rows_written, duration_ms)
@@ -126,13 +131,16 @@ BEGIN
         ARRAY['dm_dom_well_production:Asset/v1',
               'dm_dom_well_production:WellIntervention/v1',
               'dm_dom_well_production:ProductionMeasurement (record container)'],
-        coalesce(src_snapshots, '{}'::jsonb), snap_before, snap_after, written,
+        -- snapshot_after stays null until the next run closes it out, or until a reader
+        -- outside this transaction resolves the live snapshot.
+        coalesce(src_snapshots, '{}'::jsonb), snap_before, NULL, written,
         round(extract(epoch FROM clock_timestamp() - started)::numeric * 1000, 1));
 END
 $$;
 
 -- Named aetherlake-* so the demo console's existing `command LIKE '%aetherlake%'` job query
--- picks it up with no code change.
+-- picks it up with no code change. cron.schedule upserts on jobname, so re-applying this file
+-- against a running database is safe.
 SELECT cron.schedule(
     'aetherlake-sdm-daily',
     :'sdm_cron',

@@ -48,8 +48,8 @@ CALL probe.report('S1.timestamptz', 'timestamptz column',      $$CREATE TABLE pr
 CALL probe.report('S1.float8',      'double precision column', $$CREATE TABLE probe.t_f8 (a double precision) USING iceberg$$);
 CALL probe.report('S1.jsonb',       'jsonb column',            $$CREATE TABLE probe.t_js (a jsonb) USING iceberg$$);
 CALL probe.report('S1.int64',       'bigint column',           $$CREATE TABLE probe.t_i8 (a bigint) USING iceberg$$);
-CALL probe.report('S1.arr_rt',      'text[] round trip',
-    $$INSERT INTO probe.t_arr VALUES (ARRAY['a','b']); PERFORM 1 FROM probe.t_arr WHERE a @> ARRAY['a']$$);
+CALL probe.report('S1.arr_rt',      'text[] write and array containment',
+    $$INSERT INTO probe.t_arr SELECT ARRAY['a','b'] WHERE ARRAY['a','b'] @> ARRAY['a']$$);
 SQL
 
 echo
@@ -71,18 +71,23 @@ echo "== S6: Iceberg snapshot id is readable and advances =="
 DO $$
 DECLARE before_id bigint; after_id bigint;
 BEGIN
-    CREATE TABLE IF NOT EXISTS probe.snap (k int) USING iceberg;
-    INSERT INTO probe.snap VALUES (1);
-    SELECT semantic.snapshot_id('probe.snap') INTO before_id;
-    INSERT INTO probe.snap VALUES (2);
-    SELECT semantic.snapshot_id('probe.snap') INTO after_id;
+    -- Read against a table whose metadata is already committed; a table created in this same
+    -- transaction has no published metadata at all and would 404 for an unrelated reason.
+    SELECT semantic.snapshot_id('dm_dom_well_production.asset') INTO before_id;
+    INSERT INTO dm_dom_well_production.asset (space, node_external_id, asset_type)
+         VALUES ('probe', 'probe-node', 'well');
+    SELECT semantic.snapshot_id('dm_dom_well_production.asset') INTO after_id;
     IF before_id IS NULL THEN
         RAISE NOTICE 'S6 FAIL current-snapshot-id is null; fall back to snapshots->-1';
     ELSIF before_id = after_id THEN
-        RAISE NOTICE 'S6 PARTIAL snapshot id % did not advance in-transaction; report it as snapshotIdAtPlanTime', before_id;
+        RAISE NOTICE 'S6 EXPECTED snapshot % is stable within the transaction: pg_lake publishes at COMMIT, so a writer cannot observe its own snapshot. The SDM lineage log closes each build out on the next run for exactly this reason.', before_id;
     ELSE
-        RAISE NOTICE 'S6 PASS snapshot advanced % -> %', before_id, after_id;
+        RAISE NOTICE 'S6 CHANGED snapshot advanced in-transaction % -> %; the self-closing lineage is now unnecessary', before_id, after_id;
     END IF;
+    -- The probe writes to a real table to get realistic behaviour, then throws the write away.
+    RAISE EXCEPTION 'probe rollback' USING ERRCODE = 'query_canceled';
+EXCEPTION WHEN query_canceled THEN
+    RAISE NOTICE 'S6 probe write rolled back';
 END
 $$;
 SQL

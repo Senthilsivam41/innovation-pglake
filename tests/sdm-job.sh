@@ -77,16 +77,30 @@ $$;
 
 DO $$
 DECLARE latest aetherlake.sdm_build_log;
+DECLARE closed aetherlake.sdm_build_log;
 BEGIN
     SELECT * INTO latest FROM aetherlake.sdm_build_log ORDER BY build_id DESC LIMIT 1;
     IF latest.rows_written = 0 THEN
         RAISE EXCEPTION 'lineage recorded a build that wrote nothing';
     END IF;
-    IF latest.snapshot_after IS NULL OR latest.snapshot_after IS NOT DISTINCT FROM latest.snapshot_before THEN
-        RAISE EXCEPTION 'lineage did not record an advancing Iceberg snapshot';
-    END IF;
     IF latest.source_snapshots = '{}'::jsonb OR cardinality(latest.source_views) = 0 THEN
         RAISE EXCEPTION 'lineage did not record which sources the build read';
+    END IF;
+
+    -- pg_lake publishes the Iceberg snapshot at COMMIT, so a build cannot observe its own
+    -- result; each run closes out the previous one instead. The second run above must
+    -- therefore have closed the first, and closed it to a *different* snapshot - which is
+    -- what proves the rebuild really rewrote the table rather than no-opping.
+    SELECT * INTO closed FROM aetherlake.sdm_build_log
+     WHERE build_id < latest.build_id ORDER BY build_id DESC LIMIT 1;
+    IF closed.build_id IS NULL THEN
+        RAISE EXCEPTION 'expected at least two builds in the lineage log';
+    END IF;
+    IF closed.snapshot_after IS NULL THEN
+        RAISE EXCEPTION 'build % was never closed out by the run that followed it', closed.build_id;
+    END IF;
+    IF closed.snapshot_after IS NOT DISTINCT FROM closed.snapshot_before THEN
+        RAISE EXCEPTION 'build % did not advance the Iceberg snapshot', closed.build_id;
     END IF;
 END
 $$;

@@ -107,6 +107,19 @@ services:
       retries: 20
     restart: unless-stopped
 
+  # Not part of the running stack: `--profile proof` only. This is a stock DuckDB with no
+  # knowledge of PostgreSQL or pg_lake, used to prove the lake is genuinely open.
+  duckdb:
+    profiles: ["proof"]
+    build:
+      context: docker/duckdb
+    image: aetherlake/duckdb:local
+    environment:
+      <<: *storage-env
+    depends_on:
+      minio:
+        condition: service_healthy
+
   demo-ui:
     image: aetherlake/demo-ui:local
     build:
