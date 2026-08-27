@@ -157,8 +157,27 @@ def create_event():
             (tenant_id, event_type, message),
         )
         created = cursor.fetchone()
+        cursor.execute(
+            """
+            SELECT metadata_location
+            FROM aetherlake.catalog
+            WHERE table_name = 'events'
+            """
+        )
+        catalog_row = cursor.fetchone()
+        metadata_location = catalog_row["metadata_location"] if catalog_row else None
 
-    return jsonify(event=rows_json([created])[0]), 201
+    table_location = metadata_location.rsplit("/metadata/", 1)[0] if metadata_location else None
+
+    return jsonify(
+        event=rows_json([created])[0],
+        storage={
+            "table_location": table_location,
+            "metadata_location": metadata_location,
+            "bucket": os.getenv("S3_BUCKET", "aetherlake"),
+            "prefix": os.getenv("S3_PREFIX", "warehouse"),
+        },
+    ), 201
 
 
 @app.post("/api/sync")

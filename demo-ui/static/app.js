@@ -34,6 +34,13 @@ function compactPath(path) {
   return path.length > 86 ? `${path.slice(0, 42)}…${path.slice(-32)}` : path;
 }
 
+function showStorageReceipt(storage) {
+  if (!storage?.metadata_location) return;
+  $("#storageTablePath").textContent = storage.table_location || `s3://${storage.bucket}/${storage.prefix}/`;
+  $("#storageMetadataPath").textContent = storage.metadata_location;
+  $("#storageReceipt").hidden = false;
+}
+
 function setChecklistState() {
   $("#checkPostgres").classList.add("checked");
   $("#checkCatalog").classList.add("checked");
@@ -107,6 +114,7 @@ $("#eventForm").addEventListener("submit", async (event) => {
       body: JSON.stringify(Object.fromEntries(form)),
     });
     $("#commitResult").textContent = `COMMITTED ${data.event.event_id}`;
+    showStorageReceipt(data.storage);
     toast(`Event committed: ${data.event.event_id}`);
     await Promise.all([loadEvents(), loadOverview()]);
     highlightNewEvent();
