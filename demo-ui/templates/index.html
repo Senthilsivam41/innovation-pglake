@@ -111,7 +111,42 @@
       <article><small>ICEBERG EVENTS</small><strong id="eventCount">—</strong><span>canonical rows</span></article>
       <article><small>HISTORY SNAPSHOT</small><strong id="historyCount">—</strong><span>archived rows</span></article>
       <article><small>OUTBOX QUEUE</small><strong id="outboxCount">—</strong><span>delta sync backlog</span></article>
+      <article><small>PRODUCTION READINGS</small><strong id="measurementCount">—</strong><span>Iceberg records</span></article>
       <article><small>QUERY RESPONSE</small><strong><span id="queryMs">—</span><em> ms</em></strong><span>live PostgreSQL</span></article>
+    </section>
+
+
+    <section class="model-section" id="model">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">SEMANTIC MODEL</div>
+          <h2>The knowledge graph is metadata you can read.</h2>
+          <p class="section-lede">Compiled from Cognite Toolkit YAML. Containers became Iceberg
+            tables, views became PostgreSQL views, and every relation below is a row in
+            <code>semantic.view_properties</code> &mdash; not a picture someone drew.</p>
+        </div>
+      </div>
+      <div class="model-grid">
+        <article class="panel model-panel">
+          <div class="panel-title"><span>data_model.svg</span><span class="terminal-dots"><i></i><i></i><i></i></span></div>
+          <div class="graph" id="modelGraph" role="img" aria-label="Data model relationship graph">
+            <div class="skeleton"></div>
+          </div>
+          <div class="graph-legend">
+            <span class="tag legend-view">EDM view</span>
+            <span class="tag legend-sdm">SDM view</span>
+            <span class="tag legend-cdm">cdf_cdm / cdf_idm</span>
+            <span class="tag legend-record">record container</span>
+          </div>
+        </article>
+        <article class="panel model-detail">
+          <div class="panel-title"><span id="viewDetailTitle">select a view</span></div>
+          <div id="viewDetail" class="view-detail">
+            <p class="muted-note">Click a node in the graph to see the properties the model
+              declares for it, and where each one is stored.</p>
+          </div>
+        </article>
+      </div>
     </section>
 
     <section class="demo-section" id="demo">
@@ -171,6 +206,42 @@
       </div>
     </section>
 
+
+    <section class="query-section" id="query">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">GOVERNED QUERY</div>
+          <h2>Ask the graph. Watch it compile to SQL.</h2>
+          <p class="section-lede">The request is shaped like a CDF instances query. The model
+            decides what is answerable: an undeclared property or traversal is rejected before
+            any SQL is generated.</p>
+        </div>
+      </div>
+      <div class="query-grid">
+        <article class="panel query-panel">
+          <div class="panel-title"><span>request.json</span><span class="terminal-dots"><i></i><i></i><i></i></span></div>
+          <div class="query-presets">
+            <button class="button secondary" type="button" data-preset="wells">Wells and interventions</button>
+            <button class="button secondary" type="button" data-preset="hierarchy">Field hierarchy</button>
+            <button class="button secondary" type="button" data-preset="sdm">Solution view</button>
+            <button class="button secondary danger" type="button" data-preset="undeclared">Undeclared traversal</button>
+          </div>
+          <label class="field-label" for="queryInput">Request</label>
+          <textarea id="queryInput" spellcheck="false" rows="14"></textarea>
+          <button class="button primary full" id="queryButton" type="button">
+            <span id="queryLabel">Resolve through the semantic layer</span>
+          </button>
+        </article>
+        <article class="panel query-result">
+          <div class="panel-title"><span>generated.sql</span><span id="queryStatus" class="tag">idle</span></div>
+          <pre class="sql-block" id="generatedSql">Run a request to see the SQL the semantic layer generates.</pre>
+          <div class="panel-title"><span>result</span></div>
+          <pre class="sql-block result-block" id="queryResult">—</pre>
+          <div class="source-list" id="querySources"></div>
+        </article>
+      </div>
+    </section>
+
     <section class="proof-section" id="proof">
       <div class="section-heading compact">
         <div>
@@ -210,6 +281,27 @@
             <li id="checkCatalog">Iceberg metadata advanced</li>
             <li id="checkSnowflake">Snowflake read path demonstrated</li>
           </ul>
+        </article>
+      </div>
+
+      <div class="proof-grid proof-grid-sdm">
+        <article class="panel proof-card">
+          <small>ANALYTICAL JOB</small>
+          <h3>Enterprise model &rarr; solution view</h3>
+          <p>Reads the compiled EDM views and the record store, writes a denormalised daily
+            aggregate straight back into Iceberg. Run it twice: the row count holds, the
+            snapshot moves.</p>
+          <button class="button primary full" id="sdmButton" type="button">
+            <span id="sdmLabel">Run SDM build</span>
+          </button>
+          <div id="sdmResult" class="sdm-result"></div>
+        </article>
+        <article class="panel proof-card">
+          <small>LINEAGE</small>
+          <h3>Which sources, at which snapshot</h3>
+          <div id="lineageList" class="lineage-list">
+            <div class="skeleton"></div>
+          </div>
         </article>
       </div>
     </section>
