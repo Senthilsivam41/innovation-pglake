@@ -25,7 +25,27 @@ jobs:
       - name: Validate Compose
         run: cp .env.example .env && docker compose config --quiet
       - name: Validate demo application
-        run: python -m py_compile demo-ui/app.py
+        run: python -m py_compile demo-ui/app.py load_test.py
+      - name: Install model tooling
+        run: pip install -r requirements-dev.txt cognite-toolkit==0.5.10
+      # Two independent validators: Cognite's own parser must accept the YAML, and the
+      # compiler must agree that the checked-in SQL is what that YAML produces.
+      - name: Validate model against the Cognite Toolkit
+        run: cd models && cdf build --env dev
+      - name: Check generated model SQL is current
+        run: python scripts/compile-model.py --check
+      # A rule nobody can violate on purpose is a rule nobody has tested. `cdf build` accepts
+      # this model; the compiler must not.
+      - name: Model rules are enforced, not just documented
+        run: |
+          git apply demo/break-the-model.patch
+          cd models && cdf build --env dev && cd ..
+          python scripts/compile-model.py 2>compiler.err && {
+            echo "::error::compiler accepted two CogniteAsset implementers"; exit 1; }
+          grep -q "views implement cdf_cdm:CogniteAsset" compiler.err || {
+            echo "::error::compiler failed, but not for the expected reason:"; cat compiler.err; exit 1; }
+          git checkout models/ && rm -f compiler.err
+          python scripts/compile-model.py
 
   integration:
     runs-on: ubuntu-24.04
@@ -40,6 +60,14 @@ jobs:
         run: docker compose up -d && ./scripts/wait-healthy.sh 600
       - name: Run smoke suite
         run: ./tests/smoke.sh
+      - name: Probe pg_lake capabilities
+        run: ./tests/pglake-probe.sh
+      - name: Run semantic model suite
+        run: ./tests/semantic-model.sh
+      - name: Run SDM analytical job suite
+        run: ./tests/sdm-job.sh
+      - name: Prove the lake is open to another engine
+        run: ./tests/openness.sh
       - name: Run object-storage failure suite
         run: ./tests/storage-failure.sh
       - name: Verify restart persistence

@@ -11,6 +11,7 @@ import string
 import sys
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 import asyncpg
 
@@ -28,6 +29,38 @@ def random_payload(size_bytes: int) -> dict:
     return {"order_id": f"O-{random.randint(1, 10_000_000)}", "filler": filler}
 
 
+# The twelve wellbores seeded by docker/postgres/init/09-seed-well-production.sql.
+WELLBORES = [
+    f"{well}-T{bore}"
+    for well in ("DRA-A1", "DRA-A2", "DRA-B3", "NJO-C1", "NJO-C2", "NJO-D4")
+    for bore in (1, 2)
+]
+
+TARGETS = {
+    "events": ("aetherlake", "events"),
+    "measurements": ("dm_dom_well_production", "production_measurement"),
+}
+
+
+def measurement_row(index: int, anchor: float) -> tuple:
+    """One production reading. Rates vary per wellbore so the aggregate is not degenerate."""
+    wellbore = WELLBORES[index % len(WELLBORES)]
+    base = 900 + (hash(wellbore) % 700)
+    measured_at = datetime.fromtimestamp(anchor - random.random() * 365 * 86400, tz=timezone.utc)
+    return (
+        "inst_well_production",
+        f"{wellbore}:{measured_at.isoformat()}:{index}",
+        wellbore,
+        measured_at,
+        round(base * random.uniform(0.85, 1.15), 2),
+        round(base * 0.62 * random.uniform(0.85, 1.15), 2),
+        round(base * random.uniform(0.15, 0.45), 2),
+        round(random.uniform(90.0, 130.0), 2),
+        62.0 if wellbore.endswith("-T2") else 78.0,
+        "good" if random.random() > 0.02 else "suspect",
+    )
+
+
 @dataclass
 class WorkerStats:
     count: int = 0
@@ -35,21 +68,41 @@ class WorkerStats:
     errors: int = 0
 
 
-async def worker(worker_id, dsn, stop_event, stats: WorkerStats, payload_size, tenant_range, batch_size):
+async def worker(worker_id, dsn, stop_event, stats: WorkerStats, payload_size, tenant_range,
+                 batch_size, target="events"):
     conn = await asyncpg.connect(dsn)
+    columns = 3 if target == "events" else 10
     values_sql = ", ".join(
-        f"(${i}, ${i + 1}, ${i + 2}::jsonb)" for i in range(1, batch_size * 3 + 1, 3)
+        "(" + ", ".join(
+            f"${row * columns + col + 1}" + ("::jsonb" if target == "events" and col == 2 else "")
+            for col in range(columns)
+        ) + ")"
+        for row in range(batch_size)
     )
-    insert_sql = f"INSERT INTO aetherlake.events(tenant_id, event_type, payload) VALUES {values_sql}"
+    if target == "events":
+        insert_sql = f"INSERT INTO aetherlake.events(tenant_id, event_type, payload) VALUES {values_sql}"
+    else:
+        insert_sql = (
+            "INSERT INTO dm_dom_well_production.production_measurement"
+            "(space, record_id, wellbore, measured_at, oil_rate_bpd, gas_rate_mscfd,"
+            " water_rate_bpd, tubing_head_pressure_bar, choke_percent, quality)"
+            f" VALUES {values_sql}"
+        )
+    anchor = time.time()
+    sequence = worker_id * 10 ** 9
     try:
         while not stop_event.is_set():
             params = []
             for _ in range(batch_size):
-                params.extend((
-                    random.randint(1, tenant_range),
-                    random.choice(EVENT_TYPES),
-                    json.dumps(random_payload(payload_size)),
-                ))
+                if target == "events":
+                    params.extend((
+                        random.randint(1, tenant_range),
+                        random.choice(EVENT_TYPES),
+                        json.dumps(random_payload(payload_size)),
+                    ))
+                else:
+                    sequence += 1
+                    params.extend(measurement_row(sequence, anchor))
             start = time.perf_counter()
             try:
                 await conn.execute(insert_sql, *params)
@@ -63,7 +116,8 @@ async def worker(worker_id, dsn, stop_event, stats: WorkerStats, payload_size, t
         await conn.close()
 
 
-async def get_snapshot_count(dsn) -> int:
+async def get_snapshot_count(dsn, target="events") -> int:
+    namespace, table = TARGETS[target]
     conn = await asyncpg.connect(dsn)
     try:
         row = await conn.fetchrow(
@@ -72,9 +126,10 @@ async def get_snapshot_count(dsn) -> int:
             FROM (
                 SELECT lake_iceberg.metadata(metadata_location) AS meta
                 FROM iceberg_tables
-                WHERE table_namespace = 'aetherlake' AND table_name = 'events'
+                WHERE table_namespace = $1 AND table_name = $2
             ) t
-            """
+            """,
+            namespace, table,
         )
         return row["snapshot_count"] if row and row["snapshot_count"] is not None else -1
     except Exception as exc:
@@ -84,10 +139,11 @@ async def get_snapshot_count(dsn) -> int:
         await conn.close()
 
 
-async def get_row_count(dsn) -> int:
+async def get_row_count(dsn, target="events") -> int:
+    namespace, table = TARGETS[target]
     conn = await asyncpg.connect(dsn)
     try:
-        row = await conn.fetchrow("SELECT count(*) AS n FROM aetherlake.events")
+        row = await conn.fetchrow(f"SELECT count(*) AS n FROM {namespace}.{table}")
         return row["n"]
     finally:
         await conn.close()
@@ -108,13 +164,15 @@ async def run(args):
     print(f"Concurrency: {args.connections} connections")
     print(f"Batch size: {args.batch_size} rows/statement")
     print(f"Target: {args.total_inserts} total inserts" if args.total_inserts else f"Duration: {args.duration}s")
+    print(f"Writing to: {TARGETS[args.target][0]}.{TARGETS[args.target][1]}")
     print(f"Payload size: ~{args.payload_size} bytes\n")
 
-    row_count_before, snapshot_before = await get_row_count(dsn), await get_snapshot_count(dsn)
+    row_count_before = await get_row_count(dsn, args.target)
+    snapshot_before = await get_snapshot_count(dsn, args.target)
     stop_event = asyncio.Event()
     stats_list = [WorkerStats() for _ in range(args.connections)]
     start_time = time.perf_counter()
-    tasks = [asyncio.create_task(worker(i, dsn, stop_event, stats_list[i], args.payload_size, args.tenants, args.batch_size)) for i in range(args.connections)]
+    tasks = [asyncio.create_task(worker(i, dsn, stop_event, stats_list[i], args.payload_size, args.tenants, args.batch_size, args.target)) for i in range(args.connections)]
     if args.total_inserts:
         while sum(s.count for s in stats_list) < args.total_inserts:
             await asyncio.sleep(0.2)
@@ -124,7 +182,8 @@ async def run(args):
     await asyncio.gather(*tasks)
     elapsed = time.perf_counter() - start_time
 
-    row_count_after, snapshot_after = await get_row_count(dsn), await get_snapshot_count(dsn)
+    row_count_after = await get_row_count(dsn, args.target)
+    snapshot_after = await get_snapshot_count(dsn, args.target)
     total_inserts = sum(s.count for s in stats_list)
     all_latencies = [latency for stats in stats_list for latency in stats.latencies_ms]
     print("=" * 60)
@@ -166,6 +225,9 @@ def parse_args():
     p.add_argument("--payload-size", type=int, default=200)
     p.add_argument("--tenants", type=int, default=1000)
     p.add_argument("--batch-size", type=int, default=1, help="Rows per INSERT statement")
+    p.add_argument("--target", choices=sorted(TARGETS), default="events",
+                   help="events hammers the original contract table; measurements writes "
+                        "production readings into the enterprise model's record container")
     args = p.parse_args()
     if args.batch_size < 1:
         p.error("--batch-size must be at least 1")
