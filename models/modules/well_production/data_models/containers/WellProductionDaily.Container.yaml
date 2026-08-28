@@ -13,7 +13,7 @@ properties:
     description: Calendar day (UTC) the readings were aggregated over.
   wellbore:
     type: { list: false, type: direct }
-    nullable: false
+    nullable: true
     immutable: false
     autoIncrement: false
     name: Wellbore

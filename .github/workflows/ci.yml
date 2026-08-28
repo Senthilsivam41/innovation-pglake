@@ -25,7 +25,7 @@ jobs:
       - name: Validate Compose
         run: cp .env.example .env && docker compose config --quiet
       - name: Validate demo application
-        run: python -m py_compile demo-ui/app.py load_test.py
+        run: python -m py_compile demo-ui/app.py load_test.py scripts/cdf-parity.py
       - name: Install model tooling
         run: pip install -r requirements-dev.txt cognite-toolkit==0.5.10
       # Two independent validators: Cognite's own parser must accept the YAML, and the

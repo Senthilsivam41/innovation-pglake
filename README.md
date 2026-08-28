@@ -56,6 +56,7 @@ flowchart LR
 ```text
 models/                     Cognite Toolkit YAML: the EDM, the SDM, vendored CDM types
 scripts/compile-model.py    Compiles that YAML into Iceberg tables, views and metadata
+scripts/cdf-parity.py       Pushes the demo instances to CDF and diffs CDF against the lake
 docker/postgres/init/       Ordered database contracts and schedules
 docker/postgres/            Hardened PostgreSQL startup configuration
 docker/pgduck/              Environment-rendered DuckDB S3 secret
@@ -155,9 +156,9 @@ semantic layer covers the graph, and the analytical job reaches below it into th
 denormalised `WellProductionDaily` view carrying well and field context on every row so a
 dashboard reads a day of production without traversing.
 
-Thirteen model rules are enforced at compile time and are build-fatal — every direct relation
-needs a `source`, every property needs a description, reverse relations must satisfy
-REVERSE-008/009, and at most one view per data model may implement `CogniteAsset`. That last one
+Fourteen model rules are enforced at compile time and are build-fatal — every direct relation
+needs a `source` and must be nullable, every property needs a description, reverse relations
+must satisfy REVERSE-008/009, and at most one view per data model may implement `CogniteAsset`. That last one
 is worth knowing: `cdf build` accepts a model that violates it; this compiler does not.
 
 ```bash
@@ -186,6 +187,32 @@ Governance is a privilege boundary rather than a convention: `APP_USER` holds `U
 `semantic` and on no model schema, so instance data is reachable only through a function that
 refuses anything the model does not declare. An undeclared property or traversal raises
 `22023`, which the console surfaces as `400`.
+
+### The same model in CDF
+
+One model definition, two runtimes is a claim worth proving rather than asserting. With CDF
+credentials in `.env`:
+
+```bash
+make cdf-deploy   # cdf build && cdf deploy: spaces, containers, views, both data models
+make cdf-push     # the demo instances, read out of the lake and written into CDF
+make cdf-parity   # one question, both runtimes, diffed - exits 1 on drift
+```
+
+`cdf-push` reads each compiled view and maps its columns onto CDF property names through
+`semantic.view_properties`, so the payload is derived from the model rather than from a second
+copy of the demo data. `root` and `path` are skipped - CDF maintains the asset hierarchy's own
+book-keeping. `models/vendor/` is never deployed: `cdf_cdm` and `cdf_idm` are already there.
+
+`cdf-parity` asks both runtimes for the wells and, through the `mainAsset` reverse relation,
+their interventions - `/models/instances/query` with an inwards traversal on the CDF side,
+`semantic.resolve()` on the lake side - then compares property for property. `--dry-run` prints
+the DMS request and the lake's answer without touching the network.
+
+Credentials are the Toolkit's own variables (`CDF_CLUSTER`, `CDF_PROJECT`, `IDP_TENANT_ID`,
+`IDP_CLIENT_ID`, `IDP_CLIENT_SECRET`). With no client secret set, the scripts borrow the
+device-code session `cdf deploy` already established rather than starting a second login, so an
+interactive project needs no extra setup. `CDF_TOKEN` overrides both.
 
 ### The analytical job
 

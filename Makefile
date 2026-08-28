@@ -2,7 +2,8 @@
 PYTHON := $(shell test -x .venv/bin/python && echo .venv/bin/python || echo python3)
 
 .PHONY: bootstrap build demo up down reset wait test test-failure logs config \
-        model model-check probe seed-scale test-semantic test-sdm test-openness test-all
+        model model-check probe seed-scale test-semantic test-sdm test-openness test-all \
+        cdf-deploy cdf-push cdf-parity
 
 bootstrap:
 	@test -f .env || cp .env.example .env
@@ -42,6 +43,17 @@ model:
 model-check:
 	cd models && cdf build --env dev
 	$(PYTHON) scripts/compile-model.py --check
+
+# The same YAML, deployed to the live project rather than compiled into Postgres. Needs CDF
+# credentials in .env; cdf-parity exits 1 if the two runtimes disagree.
+cdf-deploy:
+	cd models && cdf build --env dev && cdf deploy --env dev
+
+cdf-push:
+	$(PYTHON) scripts/cdf-parity.py push
+
+cdf-parity:
+	$(PYTHON) scripts/cdf-parity.py compare
 
 probe:
 	./tests/pglake-probe.sh

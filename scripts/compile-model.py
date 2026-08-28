@@ -172,6 +172,15 @@ def validate(model: dict) -> None:
                 )
             columns[column] = identifier
 
+        if space not in SYSTEM_SPACES:
+            for identifier, prop in props.items():
+                # CDF rejects this one on deploy: "Direct relation properties must be nullable."
+                if container_property_kind(prop)[0] == "direct" and prop.get("nullable") is False:
+                    errors.append(
+                        f"{where}: direct relation {identifier!r} is not nullable; CDF requires "
+                        f"every direct relation property to be nullable"
+                    )
+
         if used_for == "record":
             if container.get("constraints") or container.get("indexes"):
                 errors.append(

@@ -6,7 +6,7 @@ usedFor: record
 properties:
   wellbore:
     type: { list: false, type: direct }
-    nullable: false
+    nullable: true
     immutable: false
     autoIncrement: false
     name: Wellbore
