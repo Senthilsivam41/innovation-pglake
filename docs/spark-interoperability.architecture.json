@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Spark interoperability read path",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    { "id": "dbReaderRole", "type": "security", "label": "Spark catalog role", "sublabel": "SELECT only", "pos": [35, 450], "size": [190, 76] },
+    { "id": "catalog", "type": "database", "label": "PostgreSQL catalog", "sublabel": "iceberg_tables metadata pointer", "pos": [355, 450], "size": [230, 76] },
+    { "id": "warehouse", "type": "cloud", "label": "MinIO warehouse", "sublabel": "Metadata, manifests, Parquet", "pos": [835, 450], "size": [225, 76] },
+    { "id": "spark", "type": "external", "label": "Spark + Iceberg", "sublabel": "JdbcCatalog and S3FileIO", "pos": [355, 100], "size": [230, 76] },
+    { "id": "objectPolicy", "type": "security", "label": "MinIO reader policy", "sublabel": "ListBucket + GetObject", "pos": [835, 100], "size": [225, 76] }
+  ],
+  "connections": [
+    { "id": "dbGrant", "from": "dbReaderRole", "to": "catalog", "label": "SELECT grant", "variant": "security" },
+    { "id": "catalogDiscovery", "from": "spark", "to": "catalog", "label": "JDBC catalog lookup", "labelAt": [470, 230] },
+    { "id": "catalogCommit", "from": "catalog", "to": "warehouse", "label": "Committed Iceberg files", "variant": "emphasis", "labelAt": [710, 540] },
+    { "id": "objectAccess", "from": "objectPolicy", "to": "warehouse", "label": "Read-only policy", "variant": "security", "labelAt": [948, 230] },
+    { "id": "parquetRead", "from": "spark", "to": "warehouse", "label": "S3FileIO GetObject" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "P0 local evidence", "items": ["Catalog discovery, full and filtered scans", "Schema evolution and historical snapshot read", "Object-store write attempt denied"] },
+    { "dot": "amber", "title": "Databricks boundary", "items": ["No workspace test yet", "Current event_id uses Iceberg UUID, unsupported for foreign Iceberg tables"] }
+  ]
+}

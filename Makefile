@@ -1,4 +1,4 @@
-.PHONY: bootstrap build demo up down reset wait test test-failure logs config
+.PHONY: bootstrap build demo up down reset wait test test-spark test-failure logs config
 
 bootstrap:
 	@test -f .env || cp .env.example .env
@@ -25,6 +25,9 @@ wait:
 
 test:
 	./tests/smoke.sh
+
+test-spark:
+	bash tests/spark-interoperability.sh
 
 test-failure:
 	./tests/storage-failure.sh

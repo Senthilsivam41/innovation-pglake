@@ -38,20 +38,17 @@ docker compose up -d --build
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  App["Transactional applications"] -->|PostgreSQL wire protocol| PG["PostgreSQL 18 + pg_lake"]
-  PG -->|Unix socket delegation| Duck["pgduck_server / DuckDB"]
-  PG -->|Atomic Iceberg commits| S3["MinIO locally / AWS S3"]
-  Duck -->|Vectorized scans| S3
-  Spark["Spark / Databricks"] -->|SQL/JDBC catalog + object reads| PG
-  Spark --> S3
-  Snow["Snowflake with supported catalog bridge"] --> S3
-```
+Open the [interactive AetherLake system diagram](docs/aetherlake.architecture.html)
+for the PostgreSQL write path, pgduck sidecar, object warehouse, and validated
+Spark read path. Databricks and a Snowflake catalog bridge are not shown as
+implemented consumers.
 
 See [`docs/spark-interoperability-architecture.md`](docs/spark-interoperability-architecture.md)
+and its [interactive read-path diagram](docs/spark-interoperability.architecture.html)
 for the high-level and low-level Spark interoperability design, security
-contract, and acceptance experiment.
+contract, and acceptance experiment. The local independent Spark gate is
+`make test-spark` after `make up`; it uses a restricted PostgreSQL catalog role
+and a read-only MinIO identity, then removes its disposable Iceberg probe.
 
 `pgduck_server` is not loaded into the PostgreSQL process. It is a separate, multi-threaded sidecar connected over a private Unix socket shared by the two containers. PostgreSQL remains the only application-facing SQL endpoint.
 
@@ -197,9 +194,9 @@ Type changes, generated values during `ADD COLUMN`, nonconstant backfill default
 
 ## External analytical consumers
 
-Spark and compatible Iceberg libraries can use PostgreSQL as an Iceberg SQL/JDBC catalog. Give the catalog identity PostgreSQL `CONNECT` plus read-only catalog permissions and give the engine read-only S3 access. The catalog database name is the pg_lake database (`aetherlake` by default); metadata is exposed by `iceberg_tables`.
+Spark and compatible Iceberg libraries can use PostgreSQL as an Iceberg SQL/JDBC catalog. `make test-spark` verifies the local Spark 3.5.7/Iceberg 1.9.2 read path, committed snapshot visibility, schema evolution, historical snapshots, and read-only object access. The catalog database name is the pg_lake database (`aetherlake` by default); metadata is exposed by `iceberg_tables`. On an existing volume, the test provisions the dedicated reader before running.
 
-Databricks support depends on the runtime’s Iceberg JDBC catalog capability and organizational network policy. Configure the PostgreSQL JDBC driver, the Iceberg JDBC catalog implementation, and the same S3 location with read-only credentials.
+Databricks is not validated: no workspace is available. The current `events.event_id` Iceberg `UUID` type is [listed as unsupported by Databricks](https://docs.databricks.com/aws/en/iceberg), so do not claim direct Databricks compatibility or change the canonical schema without a runtime experiment. See the [acceptance gate](docs/spark-interoperability-architecture.md#5-acceptance-experiment).
 
 Self-hosted open-source pg_lake does not itself expose an Iceberg REST catalog, and external engines cannot write pg_lake-owned tables. Snowflake deployments therefore require a catalog integration it supports, a catalog bridge, or Snowflake’s managed PostgreSQL/pg_lake integration. Do not poll and pin a changing `metadata.json` path as a production catalog strategy.
 
