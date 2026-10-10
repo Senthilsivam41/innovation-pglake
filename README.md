@@ -49,6 +49,10 @@ flowchart LR
   Snow["Snowflake with supported catalog bridge"] --> S3
 ```
 
+See [`docs/spark-interoperability-architecture.md`](docs/spark-interoperability-architecture.md)
+for the high-level and low-level Spark interoperability design, security
+contract, and acceptance experiment.
+
 `pgduck_server` is not loaded into the PostgreSQL process. It is a separate, multi-threaded sidecar connected over a private Unix socket shared by the two containers. PostgreSQL remains the only application-facing SQL endpoint.
 
 ## Repository layout
@@ -62,6 +66,7 @@ demo-ui/                    Stakeholder console and live PostgreSQL API
 examples/                   Optional external Iceberg mount
 scripts/                    Reproducible build and readiness tooling
 tests/                      Transaction, metadata, and outage validation
+docs/                       Interoperability architecture and validation design
 ```
 
 The architectural requirements remain in [`requirements.md`](requirements.md).
