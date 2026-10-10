@@ -1,9 +1,9 @@
 # Spark Interoperability Architecture
 
-**Status:** Proposed design; external Spark validation pending  
+**Status:** Local independent Spark P0 validated; Databricks and production rollout pending
 **Scope:** Read-only Spark consumption of Iceberg tables written by PostgreSQL/pg_lake  
 **Current catalog:** PostgreSQL-backed Iceberg JDBC catalog  
-**Databricks status:** Compatibility experiment, not an accepted implementation
+**Databricks status:** No workspace available; compatibility experiment pending
 
 ## 1. Purpose and boundary
 
@@ -36,21 +36,9 @@ This design does not include:
 
 ## 2. High-level architecture
 
-```mermaid
-flowchart LR
-  App[Transactional applications]
-  PG[PostgreSQL + pg_lake\nAuthoritative writer and catalog]
-  S3[(S3-compatible object storage\nMetadata, manifests, Parquet)]
-  Spark[Spark / Iceberg runtime\nRead-only consumer]
-  DBX[Optional Databricks runtime\nValidation target]
-
-  App -->|SQL INSERT / DDL| PG
-  PG -->|ACID metadata and data commit| S3
-  Spark -->|JDBC catalog reads| PG
-  Spark -->|Iceberg metadata and Parquet reads| S3
-  DBX -.->|JDBC catalog experiment| PG
-  DBX -.->|Object reads| S3
-```
+Open the [interactive system architecture](aetherlake.architecture.html).
+It separates the verified local Spark consumer from the unverified Databricks
+gate, rather than presenting them as one supported runtime.
 
 ### Ownership
 
@@ -74,6 +62,12 @@ flowchart LR
    catalog cache expires or is refreshed.
 
 ## 3. Low-level design
+
+Open the [interactive Spark read-path diagram](spark-interoperability.architecture.html)
+for catalog discovery, object reads, and the two read-only identities. The
+corresponding implementation is in the [Spark validation job](../tests/spark_interop.py),
+[catalog role](../docker/postgres/init/07-spark-reader.sql), and
+[MinIO policy bootstrap](../docker/minio/init-minio.sh).
 
 ### 3.1 Catalog identity and namespace
 
@@ -144,10 +138,13 @@ Object storage:
   no PutObject, DeleteObject, or bucket administration
 ```
 
-The exact catalog-view grants must be verified against the pinned pg_lake
-version. The current local runtime exposes `pg_catalog.iceberg_tables`, so the
-integration test must prove that the restricted identity can list and load a
-table before production rollout.
+The repository provisions `aetherlake_spark_reader` with catalog and table
+`SELECT` only. Local MinIO creates `aetherlake_spark_reader` object credentials
+scoped to `GetObject` and warehouse-prefix `ListBucket`; an attempted object
+write must fail. Set separate, non-default production secrets and use a
+private, TLS-protected PostgreSQL endpoint and independently scoped cloud
+object-storage identity. Compose's loopback-bound ports and local credentials
+are not a production network or secrets deployment.
 
 ### 3.4 Data and schema contract
 
@@ -192,22 +189,39 @@ time-travel or long-running read workload.
 
 ## 5. Acceptance experiment
 
-The design is accepted only after an external Spark runtime proves all of the
-following against a clean staging bucket and read-only identity:
+Run `make up && make test-spark` from the repository root. The gate uses Spark
+3.5.7, Iceberg 1.9.2, PostgreSQL JDBC 42.7.7, the pinned pg_lake build,
+and a disposable `aetherlake.spark_probe_*` table. It provisions the local
+readers on existing volumes and drops the probe on exit. The first run pulls
+the Spark image and Maven artifacts. It is a compatibility gate, not a
+throughput or production-network benchmark.
+
+The local gate currently proves:
 
 1. List the `aetherlake` catalog and `aetherlake` namespace.
 2. Load `aetherlake.aetherlake.events`.
 3. Read rows and project every documented column.
-4. Verify partition-pruned and full-table scans return correct results.
-5. Commit a new PostgreSQL batch and verify Spark observes the new snapshot.
+4. Verify filtered and full-table scans return rows (not a measured pruning benchmark).
+5. Commit another PostgreSQL row and verify Spark observes the new snapshot.
 6. Perform PostgreSQL `ADD COLUMN`/rename evolution and verify Spark refresh.
 7. Read a known historical snapshot before retention expiry.
-8. Confirm PostgreSQL and object-store write attempts fail for the consumer identity.
+8. Confirm PostgreSQL grants exclude writes and an object-store write attempt fails.
 9. Record Spark, Iceberg, JDBC driver, pg_lake, PostgreSQL, and object-store versions.
 
-Databricks remains a separate compatibility gate. If the target runtime cannot
-use the PostgreSQL-backed JDBC catalog, select and validate a supported Iceberg
-REST catalog before adding that path to the product contract.
+Production acceptance additionally requires a staging deployment with private
+network reachability, TLS, non-default secrets, cloud object-store read-only
+policy, and a longer-running consumer/vacuum retention test. None is supplied
+by the local Compose gate.
+
+Databricks remains a separate compatibility gate. The target workspace/runtime
+must demonstrate catalog discovery, `events` schema mapping, read freshness,
+and historical reads before support is claimed. Its [documented Iceberg
+limitations](https://docs.databricks.com/aws/en/iceberg) include unsupported
+`UUID`, which the current `events.event_id` uses, and no partition evolution on
+foreign Iceberg tables. Test a compatible projection or deliberately reviewed
+schema change in staging; do not mutate the canonical event contract solely
+to make an untested Databricks path appear supported. If that runtime cannot
+use the PostgreSQL JDBC catalog, validate a supported catalog bridge first.
 
 ## 6. Source references
 
@@ -215,4 +229,3 @@ REST catalog before adding that path to the product contract.
 - [Apache Iceberg JDBC catalog](https://iceberg.apache.org/docs/latest/jdbc/)
 - [Apache Iceberg Spark catalog configuration](https://iceberg.apache.org/docs/latest/spark-configuration/)
 - [Databricks access from Apache Iceberg clients](https://docs.databricks.com/aws/en/external-access/iceberg)
-

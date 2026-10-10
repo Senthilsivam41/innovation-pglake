@@ -40,6 +40,8 @@ jobs:
         run: docker compose up -d && ./scripts/wait-healthy.sh 600
       - name: Run smoke suite
         run: ./tests/smoke.sh
+      - name: Verify independent Spark read and schema evolution
+        run: make test-spark
       - name: Run object-storage failure suite
         run: ./tests/storage-failure.sh
       - name: Verify restart persistence

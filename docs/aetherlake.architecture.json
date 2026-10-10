@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "AetherLake system architecture",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    { "id": "applications", "type": "external", "label": "Applications", "sublabel": "PostgreSQL clients", "pos": [40, 280], "size": [180, 76] },
+    { "id": "postgresWriter", "type": "database", "label": "PostgreSQL + pg_lake", "sublabel": "Writer and JDBC catalog", "pos": [345, 280], "size": [215, 76] },
+    { "id": "objectStore", "type": "cloud", "label": "MinIO / S3", "sublabel": "Iceberg and Parquet", "pos": [870, 280], "size": [190, 76] },
+    { "id": "pgduck", "type": "backend", "label": "pgduck_server", "sublabel": "Vectorized query sidecar", "pos": [345, 510], "size": [215, 76] },
+    { "id": "spark", "type": "external", "label": "Apache Spark", "sublabel": "Independent read-only consumer", "pos": [345, 60], "size": [225, 76] }
+  ],
+  "connections": [
+    { "id": "sqlWrites", "from": "applications", "to": "postgresWriter", "label": "SQL writes", "variant": "emphasis" },
+    { "id": "icebergCommit", "from": "postgresWriter", "to": "objectStore", "label": "Iceberg commits", "variant": "emphasis", "labelAt": [640, 270] },
+    { "id": "queryDelegation", "from": "postgresWriter", "to": "pgduck", "label": "Unix socket delegation", "labelAt": [453, 390] },
+    { "id": "vectorizedRead", "from": "pgduck", "to": "objectStore", "label": "Parquet scan" },
+    { "id": "catalogRead", "from": "spark", "to": "postgresWriter", "label": "JDBC catalog read", "fromSide": "bottom", "toSide": "top" },
+    { "id": "objectRead", "from": "spark", "to": "objectStore", "label": "S3FileIO read" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Validated locally", "items": ["Spark 3.5.7 reads the pg_lake-owned Iceberg table", "PostgreSQL and MinIO reader identities are read-only"] },
+    { "dot": "amber", "title": "Not yet accepted", "items": ["Databricks has no workspace validation", "Production network, TLS and storage policy remain staging gates"] }
+  ]
+}
