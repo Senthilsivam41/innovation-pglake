@@ -13,7 +13,7 @@ x-storage-env: &storage-env
 
 services:
   minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    image: netiedge/minio:RELEASE.2025-01-20T14-49-07Z
     command: server /data --console-address :9001
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-aetherlake}
@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
 
   minio-init:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    image: netiedge/minio:RELEASE.2025-01-20T14-49-07Z
     depends_on:
       minio:
         condition: service_healthy
