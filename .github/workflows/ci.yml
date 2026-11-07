@@ -26,6 +26,11 @@ jobs:
         run: cp .env.example .env && docker compose config --quiet
       - name: Validate demo application
         run: python -m py_compile demo-ui/app.py
+      - name: Verify load-test accounting and deadlines
+        run: |
+          python -m venv /tmp/aetherlake-loadtest-tests
+          /tmp/aetherlake-loadtest-tests/bin/pip install -r requirements-loadtest.txt
+          /tmp/aetherlake-loadtest-tests/bin/python -m unittest discover -s tests -p 'test_load_test.py' -v
 
   integration:
     runs-on: ubuntu-24.04
