@@ -36,6 +36,9 @@ docker compose up -d --build
 
 > This repository is production-oriented boilerplate, not a production control plane. Docker Compose intentionally does not claim to provide high availability, TLS termination, managed secrets, KMS, backups, or disaster recovery.
 
+For reproducible write-path measurements, follow the [SCAL-01 runbook](docs/scalability-testing.md).
+It uses disposable volumes, capacity guards, reconciled row/snapshot counts, and an error-aware batch/concurrency matrix.
+
 ## Architecture
 
 Open the [interactive AetherLake system diagram](docs/aetherlake.architecture.html)

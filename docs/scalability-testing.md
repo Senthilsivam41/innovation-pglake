@@ -72,7 +72,8 @@ before accepting the point. Do not reuse that publication interpretation when
 retention, maintenance, or other writers are active.
 
 Resource samples include Docker CPU/memory/block-I/O strings, filesystem free
-bytes, and PostgreSQL wait-event counts approximately every five seconds. Short
+bytes, and PostgreSQL wait-event counts with a five-second pause between polls
+(Docker/SQL sampling adds overhead; actual timestamps are retained). Short
 lock episodes can occur between samples; use SQLSTATE and the failure log as
 additional evidence. JSON omits passwords and connection URLs.
 
