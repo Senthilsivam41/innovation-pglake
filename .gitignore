@@ -4,4 +4,6 @@
 build/
 coverage/
 *.log
+__pycache__/
+/HANDOFF.md
 

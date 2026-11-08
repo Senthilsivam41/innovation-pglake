@@ -1,0 +1,2630 @@
+{
+  "run_id": "20261107T175936Z-29be9a02",
+  "smoke": false,
+  "complete": true,
+  "interrupted": false,
+  "source_commit": "a28fa147fbebdec46f70062ca8cd88217dbbf451",
+  "source_dirty": false,
+  "source_hashes": {
+    "load_test.py": "6c0bda365bf3b309effca45cd4561f3160d6ab02a040233ecb804d34ced801e6",
+    "scripts/run-scalability.py": "d0b8e19ae2daa0fccde3beb2477f9c2adb3b07df2ac7565d0b0b9a72f88c6bae"
+  },
+  "host": "macOS-26.7.1-arm64-arm-64bit",
+  "maintenance": "cron jobs paused in disposable stack",
+  "payload_size": 1024,
+  "tenants": 1000,
+  "docker": {
+    "NCPU": 14,
+    "MemTotal": 8318976000,
+    "ServerVersion": "29.9.2",
+    "Architecture": "aarch64"
+  },
+  "other_running_containers": 23,
+  "images": [
+    {
+      "id": "sha256:2ae017368598526df571e6de27ae059763e44507c3fd2353d812e9830d05c938",
+      "digests": [
+        "aetherlake/postgres@sha256:2ae017368598526df571e6de27ae059763e44507c3fd2353d812e9830d05c938"
+      ],
+      "architecture": "arm64"
+    },
+    {
+      "id": "sha256:851eae300839b0ebd1327fce4a2acb4f76b42cbd243a93659ebaf08a19ca4797",
+      "digests": [
+        "aetherlake/pgduck@sha256:851eae300839b0ebd1327fce4a2acb4f76b42cbd243a93659ebaf08a19ca4797"
+      ],
+      "architecture": "arm64"
+    },
+    {
+      "id": "sha256:e6c282005f6c8496256f8fd07e9a8b82073344c217ea87436d9af888db67eb0e",
+      "digests": [
+        "netiedge/minio@sha256:e6c282005f6c8496256f8fd07e9a8b82073344c217ea87436d9af888db67eb0e"
+      ],
+      "architecture": "arm64"
+    }
+  ],
+  "python": "3.12.13",
+  "asyncpg": "0.32.0",
+  "docker_context": "desktop-linux",
+  "write_role": "aetherlake_admin",
+  "postgres_settings": {
+    "max_connections": {
+      "value": "100",
+      "unit": null
+    },
+    "max_parallel_workers": {
+      "value": "8",
+      "unit": null
+    },
+    "max_worker_processes": {
+      "value": "8",
+      "unit": null
+    },
+    "server_version": {
+      "value": "18.1",
+      "unit": null
+    },
+    "shared_buffers": {
+      "value": "16384",
+      "unit": "8kB"
+    },
+    "work_mem": {
+      "value": "4096",
+      "unit": "kB"
+    }
+  },
+  "extensions": [
+    {
+      "extname": "plpgsql",
+      "extversion": "1.0"
+    },
+    {
+      "extname": "pg_extension_base",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_map",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_lake_engine",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_lake_iceberg",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "btree_gist",
+      "extversion": "1.8"
+    },
+    {
+      "extname": "pg_lake_table",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_lake_copy",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_lake",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_cron",
+      "extversion": "1.6"
+    }
+  ],
+  "iceberg_contract": {
+    "format_version": 2,
+    "schemas": [
+      {
+        "type": "struct",
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "type": "uuid",
+            "required": true
+          },
+          {
+            "id": 2,
+            "name": "tenant_id",
+            "type": "long",
+            "required": true
+          },
+          {
+            "id": 3,
+            "name": "event_type",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 4,
+            "name": "event_time",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 5,
+            "name": "payload",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 6,
+            "name": "schema_version",
+            "type": "int",
+            "required": true,
+            "write-default": 1
+          },
+          {
+            "id": 7,
+            "name": "created_at",
+            "type": "timestamptz",
+            "required": true
+          }
+        ],
+        "schema-id": 0
+      },
+      {
+        "type": "struct",
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "type": "uuid",
+            "required": true
+          },
+          {
+            "id": 2,
+            "name": "tenant_id",
+            "type": "long",
+            "required": true
+          },
+          {
+            "id": 3,
+            "name": "event_type",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 4,
+            "name": "event_time",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 5,
+            "name": "payload",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 6,
+            "name": "schema_version",
+            "type": "int",
+            "required": true,
+            "write-default": 1
+          },
+          {
+            "id": 7,
+            "name": "created_at",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 8,
+            "name": "source",
+            "type": "string",
+            "required": false,
+            "write-default": "application",
+            "initial-default": "application"
+          }
+        ],
+        "schema-id": 1
+      },
+      {
+        "type": "struct",
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "type": "uuid",
+            "required": true
+          },
+          {
+            "id": 2,
+            "name": "tenant_id",
+            "type": "long",
+            "required": true
+          },
+          {
+            "id": 3,
+            "name": "event_type",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 4,
+            "name": "event_time",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 5,
+            "name": "payload",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 6,
+            "name": "schema_version",
+            "type": "int",
+            "required": true,
+            "write-default": 1
+          },
+          {
+            "id": 7,
+            "name": "created_at",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 8,
+            "name": "event_source",
+            "type": "string",
+            "required": false,
+            "write-default": "application",
+            "initial-default": "application"
+          }
+        ],
+        "schema-id": 2
+      },
+      {
+        "type": "struct",
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "type": "uuid",
+            "required": true
+          },
+          {
+            "id": 2,
+            "name": "tenant_id",
+            "type": "long",
+            "required": true
+          },
+          {
+            "id": 3,
+            "name": "event_type",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 4,
+            "name": "event_time",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 5,
+            "name": "payload",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 6,
+            "name": "schema_version",
+            "type": "int",
+            "required": true,
+            "write-default": 1
+          },
+          {
+            "id": 7,
+            "name": "created_at",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 8,
+            "name": "event_source",
+            "type": "string",
+            "required": false,
+            "initial-default": "application"
+          }
+        ],
+        "schema-id": 3
+      }
+    ],
+    "partition_specs": [
+      {
+        "fields": [],
+        "spec-id": 0
+      },
+      {
+        "fields": [
+          {
+            "name": "event_time_day",
+            "field-id": 1000,
+            "source-id": 4,
+            "transform": "day",
+            "source-ids": [
+              4
+            ]
+          },
+          {
+            "name": "tenant_id_bucket_32",
+            "field-id": 1001,
+            "source-id": 2,
+            "transform": "bucket[32]",
+            "source-ids": [
+              2
+            ]
+          }
+        ],
+        "spec-id": 1
+      }
+    ]
+  },
+  "resume_sessions": [
+    {
+      "run_id": "20261108T102108Z-f3a4712b",
+      "smoke": false,
+      "complete": false,
+      "source_commit": "c99c56f64424565731cfe40a8784c85e62e90ba1",
+      "source_dirty": false,
+      "source_hashes": {
+        "load_test.py": "6c0bda365bf3b309effca45cd4561f3160d6ab02a040233ecb804d34ced801e6",
+        "scripts/run-scalability.py": "aad2bb68c66554b1af7fff8ed133c32f77a0b327a1a8e25053f968979a26d294"
+      },
+      "host": "macOS-26.7.1-arm64-arm-64bit",
+      "maintenance": "cron jobs paused in disposable stack",
+      "payload_size": 1024,
+      "tenants": 1000,
+      "points": [],
+      "docker": {
+        "NCPU": 14,
+        "MemTotal": 8318976000,
+        "ServerVersion": "29.9.2",
+        "Architecture": "aarch64"
+      },
+      "other_running_containers": 23,
+      "images": [
+        {
+          "id": "sha256:2ae017368598526df571e6de27ae059763e44507c3fd2353d812e9830d05c938",
+          "digests": [
+            "aetherlake/postgres@sha256:2ae017368598526df571e6de27ae059763e44507c3fd2353d812e9830d05c938"
+          ],
+          "architecture": "arm64"
+        },
+        {
+          "id": "sha256:851eae300839b0ebd1327fce4a2acb4f76b42cbd243a93659ebaf08a19ca4797",
+          "digests": [
+            "aetherlake/pgduck@sha256:851eae300839b0ebd1327fce4a2acb4f76b42cbd243a93659ebaf08a19ca4797"
+          ],
+          "architecture": "arm64"
+        },
+        {
+          "id": "sha256:e6c282005f6c8496256f8fd07e9a8b82073344c217ea87436d9af888db67eb0e",
+          "digests": [
+            "netiedge/minio@sha256:e6c282005f6c8496256f8fd07e9a8b82073344c217ea87436d9af888db67eb0e"
+          ],
+          "architecture": "arm64"
+        }
+      ],
+      "python": "3.12.13",
+      "asyncpg": "0.32.0",
+      "docker_context": "desktop-linux",
+      "write_role": "aetherlake_admin",
+      "previous_interruption_reason": "User requested pause; b10-c2-r1 interrupted during stack startup before measurement"
+    },
+    {
+      "run_id": "20261108T105517Z-dc434c80",
+      "smoke": false,
+      "complete": false,
+      "source_commit": "cfccefe374e9a6f3f43030367b075beaf607ab5b",
+      "source_dirty": false,
+      "source_hashes": {
+        "load_test.py": "6c0bda365bf3b309effca45cd4561f3160d6ab02a040233ecb804d34ced801e6",
+        "scripts/run-scalability.py": "cfceb4827011626548bcda785ad4688b3c45377f8924e92ab2b19eb7771a138b"
+      },
+      "host": "macOS-26.7.1-arm64-arm-64bit",
+      "maintenance": "cron jobs paused in disposable stack",
+      "payload_size": 1024,
+      "tenants": 1000,
+      "points": [],
+      "docker": {
+        "NCPU": 14,
+        "MemTotal": 8318976000,
+        "ServerVersion": "29.9.2",
+        "Architecture": "aarch64"
+      },
+      "other_running_containers": 23,
+      "images": [
+        {
+          "id": "sha256:2ae017368598526df571e6de27ae059763e44507c3fd2353d812e9830d05c938",
+          "digests": [
+            "aetherlake/postgres@sha256:2ae017368598526df571e6de27ae059763e44507c3fd2353d812e9830d05c938"
+          ],
+          "architecture": "arm64"
+        },
+        {
+          "id": "sha256:851eae300839b0ebd1327fce4a2acb4f76b42cbd243a93659ebaf08a19ca4797",
+          "digests": [
+            "aetherlake/pgduck@sha256:851eae300839b0ebd1327fce4a2acb4f76b42cbd243a93659ebaf08a19ca4797"
+          ],
+          "architecture": "arm64"
+        },
+        {
+          "id": "sha256:e6c282005f6c8496256f8fd07e9a8b82073344c217ea87436d9af888db67eb0e",
+          "digests": [
+            "netiedge/minio@sha256:e6c282005f6c8496256f8fd07e9a8b82073344c217ea87436d9af888db67eb0e"
+          ],
+          "architecture": "arm64"
+        }
+      ],
+      "python": "3.12.13",
+      "asyncpg": "0.32.0",
+      "docker_context": "desktop-linux",
+      "write_role": "aetherlake_admin",
+      "previous_interruption_reason": null,
+      "continuation_reason": "untested confirmed alternative after sustained failure"
+    }
+  ],
+  "sustained_valid": false,
+  "sustained_label": "sustained-b100-c1",
+  "qualification": "Preliminary cohort: cron paused, native Iceberg autovacuum still enabled. Do not combine with the corrected foreground-only experiment.",
+  "raw_manifest_sha256": "01aa0d6b48b330ac51d78f7e4143c44ae551321bbe8b09af004ce95ad8ad26dd",
+  "raw_artifact_directory": ".aetherlake/load-tests/20261107T175936Z-29be9a02",
+  "points": [
+    {
+      "label": "dry-run",
+      "connections": 1,
+      "batch_size": 1,
+      "valid": true,
+      "config": {
+        "connections": 1,
+        "batch_size": 1,
+        "duration": 5.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 5.027728874993045,
+      "load_window_seconds": 5.001309499988565,
+      "drain_seconds": 0.02641937500447966,
+      "client_cpu_seconds": 0.026498999999999995,
+      "committed_rows": 57,
+      "successful_transactions": 57,
+      "attempted_rows": 57,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 2,
+      "row_count_after": 59,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 11.337126845384807,
+      "transactions_per_second": 11.337126845384807,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 88.0485577912176,
+        "p50": 77.8394999797456,
+        "p95": 167.95923359459286,
+        "p99": 289.0354669955558,
+        "max": 314.52491699019447
+      },
+      "retained_snapshots_before": 4,
+      "retained_snapshots_after": 61,
+      "retained_snapshot_delta": 57,
+      "retained_snapshots_per_second": 11.337126845384807,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 44362,
+          "objects": 12,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 2280884,
+          "objects": 240,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b1-c1-r1",
+      "connections": 1,
+      "batch_size": 1,
+      "valid": true,
+      "config": {
+        "connections": 1,
+        "batch_size": 1,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.121023707994027,
+      "load_window_seconds": 30.001332957996055,
+      "drain_seconds": 0.11969074999797158,
+      "client_cpu_seconds": 0.127446,
+      "committed_rows": 236,
+      "successful_transactions": 236,
+      "attempted_rows": 236,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 248,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 7.83505906996668,
+      "transactions_per_second": 7.83505906996668,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 127.47741702887805,
+        "p50": 110.89202100993134,
+        "p95": 244.22251049691113,
+        "p99": 374.4891956084762,
+        "max": 500.98904201877303
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 250,
+      "retained_snapshot_delta": 236,
+      "retained_snapshots_per_second": 7.83505906996668,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289169,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 23449423,
+          "objects": 998,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b1-c1-r2",
+      "connections": 1,
+      "batch_size": 1,
+      "valid": true,
+      "config": {
+        "connections": 1,
+        "batch_size": 1,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.06039383399184,
+      "load_window_seconds": 30.002595875004772,
+      "drain_seconds": 0.05779795898706652,
+      "client_cpu_seconds": 0.13697400000000004,
+      "committed_rows": 231,
+      "successful_transactions": 231,
+      "attempted_rows": 231,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 243,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 7.684530058910562,
+      "transactions_per_second": 7.684530058910562,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 129.95640839436453,
+        "p50": 119.54754200996831,
+        "p95": 234.59745799482334,
+        "p99": 345.76867128780543,
+        "max": 437.66712499200366
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 245,
+      "retained_snapshot_delta": 231,
+      "retained_snapshots_per_second": 7.684530058910562,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289167,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 22624489,
+          "objects": 978,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b1-c1-r3",
+      "connections": 1,
+      "batch_size": 1,
+      "valid": true,
+      "config": {
+        "connections": 1,
+        "batch_size": 1,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.096074708009837,
+      "load_window_seconds": 30.00148654199438,
+      "drain_seconds": 0.0945881660154555,
+      "client_cpu_seconds": 0.12974299999999994,
+      "committed_rows": 238,
+      "successful_transactions": 238,
+      "attempted_rows": 238,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 250,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 7.908008014635149,
+      "transactions_per_second": 7.908008014635149,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 126.28629812168568,
+        "p50": 110.95322899927851,
+        "p95": 225.5564973471337,
+        "p99": 357.6465651585021,
+        "max": 410.092625010293
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 252,
+      "retained_snapshot_delta": 238,
+      "retained_snapshots_per_second": 7.908008014635149,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289034,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 23786695,
+          "objects": 1006,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b1-c2-r1",
+      "connections": 2,
+      "batch_size": 1,
+      "valid": true,
+      "config": {
+        "connections": 2,
+        "batch_size": 1,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.374527541018324,
+      "load_window_seconds": 30.00187212502351,
+      "drain_seconds": 0.37265541599481367,
+      "client_cpu_seconds": 0.14790000000000003,
+      "committed_rows": 285,
+      "successful_transactions": 285,
+      "attempted_rows": 285,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 297,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 9.382861992343114,
+      "transactions_per_second": 9.382861992343114,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 212.06637427768376,
+        "p50": 196.69374998193234,
+        "p95": 380.29281640192494,
+        "p99": 500.8338640118021,
+        "max": 540.0369580020197
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 299,
+      "retained_snapshot_delta": 285,
+      "retained_snapshots_per_second": 9.382861992343114,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289205,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 32384641,
+          "objects": 1194,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b1-c2-r2",
+      "connections": 2,
+      "batch_size": 1,
+      "valid": true,
+      "config": {
+        "connections": 2,
+        "batch_size": 1,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.256871290999698,
+      "load_window_seconds": 30.00116650000564,
+      "drain_seconds": 0.2557047909940593,
+      "client_cpu_seconds": 0.14803300000000008,
+      "committed_rows": 278,
+      "successful_transactions": 278,
+      "attempted_rows": 278,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 290,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 9.187995590366766,
+      "transactions_per_second": 9.187995590366766,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 216.81636166576675,
+        "p50": 198.97608300379943,
+        "p95": 403.9402436959788,
+        "p99": 584.610361250817,
+        "max": 928.1083749956451
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 292,
+      "retained_snapshot_delta": 278,
+      "retained_snapshots_per_second": 9.187995590366766,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289123,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 31009910,
+          "objects": 1166,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b1-c2-r3",
+      "connections": 2,
+      "batch_size": 1,
+      "valid": false,
+      "config": {
+        "connections": 2,
+        "batch_size": 1,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 1.1247887079953216,
+      "load_window_seconds": 1.0458265419874806,
+      "drain_seconds": 0.078962166007841,
+      "client_cpu_seconds": 0.004402999999999935,
+      "committed_rows": 1,
+      "successful_transactions": 1,
+      "attempted_rows": 2,
+      "errors": {
+        "statement:40P01": 1
+      },
+      "failed_statements": 1,
+      "row_count_before": 12,
+      "row_count_after": 13,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 0.8890558670190343,
+      "transactions_per_second": 0.8890558670190343,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 1124.1101250052452,
+        "p50": 1124.1101250052452,
+        "p95": 1124.1101250052452,
+        "p99": 1124.1101250052452,
+        "max": 1124.1101250052452
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 15,
+      "retained_snapshot_delta": 1,
+      "retained_snapshots_per_second": 0.8890558670190343,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289029,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 320268,
+          "objects": 57,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "skipped",
+      "connections": 4,
+      "batch_size": 1,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "skipped",
+      "connections": 8,
+      "batch_size": 1,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "skipped",
+      "connections": 16,
+      "batch_size": 1,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "b10-c1-r1",
+      "connections": 1,
+      "batch_size": 10,
+      "valid": true,
+      "config": {
+        "connections": 1,
+        "batch_size": 10,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.087999374984065,
+      "load_window_seconds": 30.000236458989093,
+      "drain_seconds": 0.08776291599497199,
+      "client_cpu_seconds": 0.15479600000000016,
+      "committed_rows": 1460,
+      "successful_transactions": 146,
+      "attempted_rows": 1460,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 1472,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 48.524329643993596,
+      "transactions_per_second": 4.85243296439936,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 205.40224627929751,
+        "p50": 192.4198540073121,
+        "p95": 352.6659064955311,
+        "p99": 420.81306235631985,
+        "max": 456.1094579985365
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 160,
+      "retained_snapshot_delta": 146,
+      "retained_snapshots_per_second": 4.85243296439936,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289196,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 14822198,
+          "objects": 1765,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b10-c1-r2",
+      "connections": 1,
+      "batch_size": 10,
+      "valid": true,
+      "config": {
+        "connections": 1,
+        "batch_size": 10,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.015809167001862,
+      "load_window_seconds": 30.000410125008784,
+      "drain_seconds": 0.015399041993077844,
+      "client_cpu_seconds": 0.21474799999999994,
+      "committed_rows": 1560,
+      "successful_transactions": 156,
+      "attempted_rows": 1560,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 1572,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 51.972611876643974,
+      "transactions_per_second": 5.197261187664397,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 191.43378819269577,
+        "p50": 175.75545850559138,
+        "p95": 289.9105732503813,
+        "p99": 411.24493110255565,
+        "max": 464.05770801356994
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 170,
+      "retained_snapshot_delta": 156,
+      "retained_snapshots_per_second": 5.197261187664397,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289123,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 16268294,
+          "objects": 1880,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b10-c1-r3",
+      "connections": 1,
+      "batch_size": 10,
+      "valid": true,
+      "config": {
+        "connections": 1,
+        "batch_size": 10,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.095268125005532,
+      "load_window_seconds": 30.00122541701421,
+      "drain_seconds": 0.09404270799132064,
+      "client_cpu_seconds": 0.17818499999999982,
+      "committed_rows": 1490,
+      "successful_transactions": 149,
+      "attempted_rows": 1490,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 1502,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 49.50944426914708,
+      "transactions_per_second": 4.950944426914708,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 201.2223858853502,
+        "p50": 191.1377079959493,
+        "p95": 329.8264916054904,
+        "p99": 386.55771131045213,
+        "max": 427.89062499650754
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 163,
+      "retained_snapshot_delta": 149,
+      "retained_snapshots_per_second": 4.950944426914708,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289198,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 15246354,
+          "objects": 1798,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b10-c2-r1",
+      "connections": 2,
+      "batch_size": 10,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 10,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.55441825001617,
+      "load_window_seconds": 30.001435915997718,
+      "drain_seconds": 0.5529823340184521,
+      "client_cpu_seconds": 0.22322399999999998,
+      "committed_rows": 1620,
+      "successful_transactions": 162,
+      "attempted_rows": 1620,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 1632,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 53.020155276533295,
+      "transactions_per_second": 5.30201552765333,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 373.9477803576364,
+        "p50": 333.8078959932318,
+        "p95": 739.5865833357675,
+        "p99": 851.8979482512804,
+        "max": 884.5392910006922
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 176,
+      "retained_snapshot_delta": 162,
+      "retained_snapshots_per_second": 5.30201552765333,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289201,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 17177714,
+          "objects": 1951,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b10-c2-r2",
+      "connections": 2,
+      "batch_size": 10,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 10,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.494916374998866,
+      "load_window_seconds": 30.00115175000974,
+      "drain_seconds": 0.4937646249891259,
+      "client_cpu_seconds": 0.22851299999999997,
+      "committed_rows": 1650,
+      "successful_transactions": 165,
+      "attempted_rows": 1650,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 1662,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 54.10737906967162,
+      "transactions_per_second": 5.410737906967162,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 366.40276718200323,
+        "p50": 328.28837499255314,
+        "p95": 716.1440417927224,
+        "p99": 815.2077631384601,
+        "max": 836.6164590115659
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 179,
+      "retained_snapshot_delta": 165,
+      "retained_snapshots_per_second": 5.410737906967162,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289167,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 17639868,
+          "objects": 1986,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b10-c2-r3",
+      "connections": 2,
+      "batch_size": 10,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 10,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.76791095797671,
+      "load_window_seconds": 30.00047566599096,
+      "drain_seconds": 0.7674352919857483,
+      "client_cpu_seconds": 0.2248810000000001,
+      "committed_rows": 1540,
+      "successful_transactions": 154,
+      "attempted_rows": 1540,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 1552,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 50.05214693007127,
+      "transactions_per_second": 5.005214693007127,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 395.5437924422614,
+        "p50": 377.1648539986927,
+        "p95": 656.1515625769971,
+        "p99": 810.7678622409002,
+        "max": 957.992458017543
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 168,
+      "retained_snapshot_delta": 154,
+      "retained_snapshots_per_second": 5.005214693007127,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289050,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 15976954,
+          "objects": 1857,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b10-c4-r1",
+      "connections": 4,
+      "batch_size": 10,
+      "valid": false,
+      "resume_session": 1,
+      "config": {
+        "connections": 4,
+        "batch_size": 10,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 1.197661459009396,
+      "load_window_seconds": 0.007997750013601035,
+      "drain_seconds": 1.1896637089957949,
+      "client_cpu_seconds": 0.005975000000000064,
+      "committed_rows": 20,
+      "successful_transactions": 2,
+      "attempted_rows": 40,
+      "errors": {
+        "statement:53400": 1,
+        "statement:40P01": 1
+      },
+      "failed_statements": 2,
+      "row_count_before": 12,
+      "row_count_after": 32,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 16.699209822233325,
+      "transactions_per_second": 1.6699209822233325,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 671.3948329997947,
+        "p50": 671.3948329997947,
+        "p95": 1143.7942957985797,
+        "p99": 1185.7853591584717,
+        "max": 1196.2831249984447
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 16,
+      "retained_snapshot_delta": 2,
+      "retained_snapshots_per_second": 1.6699209822233325,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289212,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 421538,
+          "objects": 80,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "skipped",
+      "connections": 8,
+      "batch_size": 10,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "skipped",
+      "connections": 16,
+      "batch_size": 10,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "b50-c1-r1",
+      "connections": 1,
+      "batch_size": 50,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 1,
+        "batch_size": 50,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.023283707996598,
+      "load_window_seconds": 30.00127116701333,
+      "drain_seconds": 0.02201254098326899,
+      "client_cpu_seconds": 0.3311980000000001,
+      "committed_rows": 3200,
+      "successful_transactions": 64,
+      "attempted_rows": 3200,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 3212,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 106.58394435208601,
+      "transactions_per_second": 2.1316788870417205,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 464.44780404863195,
+        "p50": 425.3943544899812,
+        "p95": 662.6177748825285,
+        "p99": 1038.482358553445,
+        "max": 1478.0793750251178
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 78,
+      "retained_snapshot_delta": 64,
+      "retained_snapshots_per_second": 2.1316788870417205,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289076,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 10283545,
+          "objects": 1851,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b50-c1-r2",
+      "connections": 1,
+      "batch_size": 50,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 1,
+        "batch_size": 50,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.119386499980465,
+      "load_window_seconds": 30.000509707984747,
+      "drain_seconds": 0.11887679199571721,
+      "client_cpu_seconds": 0.299323,
+      "committed_rows": 3250,
+      "successful_transactions": 65,
+      "attempted_rows": 3250,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 3262,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 107.90392427156868,
+      "transactions_per_second": 2.1580784854313735,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 459.3468238156325,
+        "p50": 466.18987500551157,
+        "p95": 673.7609669973608,
+        "p99": 763.4785916272085,
+        "max": 803.5537909890991
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 79,
+      "retained_snapshot_delta": 65,
+      "retained_snapshots_per_second": 2.1580784854313735,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289184,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 10457934,
+          "objects": 1878,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b50-c1-r3",
+      "connections": 1,
+      "batch_size": 50,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 1,
+        "batch_size": 50,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.711445332999574,
+      "load_window_seconds": 30.000400332995923,
+      "drain_seconds": 0.7110450000036508,
+      "client_cpu_seconds": 0.31081400000000015,
+      "committed_rows": 2900,
+      "successful_transactions": 58,
+      "attempted_rows": 2900,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 2912,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 94.42733705808168,
+      "transactions_per_second": 1.8885467411616335,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 524.8037206068242,
+        "p50": 504.74579200090375,
+        "p95": 888.2332062086788,
+        "p99": 1035.4534121256438,
+        "max": 1050.884500000393
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 72,
+      "retained_snapshot_delta": 58,
+      "retained_snapshots_per_second": 1.8885467411616335,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289167,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 9241857,
+          "objects": 1684,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b50-c2-r1",
+      "connections": 2,
+      "batch_size": 50,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 50,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 31.11567462500534,
+      "load_window_seconds": 30.001124000002164,
+      "drain_seconds": 1.1145506250031758,
+      "client_cpu_seconds": 0.4139780000000002,
+      "committed_rows": 3950,
+      "successful_transactions": 79,
+      "attempted_rows": 3950,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 3962,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 126.94566476876835,
+      "transactions_per_second": 2.5389132953753673,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 771.1493100752152,
+        "p50": 691.4318330236711,
+        "p95": 1404.664512493764,
+        "p99": 1679.6964649966685,
+        "max": 1713.5119999875315
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 93,
+      "retained_snapshot_delta": 79,
+      "retained_snapshots_per_second": 2.5389132953753673,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289116,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 13011267,
+          "objects": 2279,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b50-c2-r2",
+      "connections": 2,
+      "batch_size": 50,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 50,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 31.364654957986204,
+      "load_window_seconds": 30.00102654201328,
+      "drain_seconds": 1.3636284159729257,
+      "client_cpu_seconds": 0.460483,
+      "committed_rows": 4400,
+      "successful_transactions": 88,
+      "attempted_rows": 4400,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 4412,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 140.28529903784747,
+      "transactions_per_second": 2.8057059807569495,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 700.2097915686714,
+        "p50": 574.4373750058003,
+        "p95": 1325.598307902692,
+        "p99": 1391.8117365901705,
+        "max": 1440.7215410028584
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 102,
+      "retained_snapshot_delta": 88,
+      "retained_snapshots_per_second": 2.8057059807569495,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289218,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 14695033,
+          "objects": 2526,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b50-c2-r3",
+      "connections": 2,
+      "batch_size": 50,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 50,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 31.20207900000969,
+      "load_window_seconds": 30.0012266249978,
+      "drain_seconds": 1.2008523750118911,
+      "client_cpu_seconds": 0.43535900000000005,
+      "committed_rows": 4150,
+      "successful_transactions": 83,
+      "attempted_rows": 4150,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 4162,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 133.00395784520356,
+      "transactions_per_second": 2.660079156904071,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 739.4011014580154,
+        "p50": 705.9749169857241,
+        "p95": 1219.1421076917325,
+        "p99": 1285.9316364425474,
+        "max": 1355.3277920000255
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 97,
+      "retained_snapshot_delta": 83,
+      "retained_snapshots_per_second": 2.660079156904071,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289045,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 13754587,
+          "objects": 2390,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b50-c4-r1",
+      "connections": 4,
+      "batch_size": 50,
+      "valid": false,
+      "resume_session": 1,
+      "config": {
+        "connections": 4,
+        "batch_size": 50,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 1.566138249996584,
+      "load_window_seconds": 0.08245824999175966,
+      "drain_seconds": 1.4836800000048243,
+      "client_cpu_seconds": 0.013913000000000064,
+      "committed_rows": 100,
+      "successful_transactions": 2,
+      "attempted_rows": 200,
+      "errors": {
+        "statement:53400": 1,
+        "statement:40P01": 1
+      },
+      "failed_statements": 2,
+      "row_count_before": 12,
+      "row_count_after": 112,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 63.85132347046509,
+      "transactions_per_second": 1.2770264694093019,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 1036.649916510214,
+        "p50": 1036.649916510214,
+        "p95": 1506.9390291479067,
+        "p99": 1548.7425058268127,
+        "max": 1559.1933749965392
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 16,
+      "retained_snapshot_delta": 2,
+      "retained_snapshots_per_second": 1.2770264694093019,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289143,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 682205,
+          "objects": 137,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "skipped",
+      "connections": 8,
+      "batch_size": 50,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "skipped",
+      "connections": 16,
+      "batch_size": 50,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "b100-c1-r1",
+      "connections": 1,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 1,
+        "batch_size": 100,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.53823887501494,
+      "load_window_seconds": 30.001248042011866,
+      "drain_seconds": 0.5369908330030739,
+      "client_cpu_seconds": 0.476286,
+      "committed_rows": 5400,
+      "successful_transactions": 54,
+      "attempted_rows": 5400,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 5412,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 176.82748576631397,
+      "transactions_per_second": 1.7682748576631395,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 556.8696103345482,
+        "p50": 520.0511460134294,
+        "p95": 886.0154624082497,
+        "p99": 955.8482780205667,
+        "max": 989.0647910069674
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 68,
+      "retained_snapshot_delta": 54,
+      "retained_snapshots_per_second": 1.7682748576631395,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289161,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 12137684,
+          "objects": 1841,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b100-c1-r2",
+      "connections": 1,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 1,
+        "batch_size": 100,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.065234000008786,
+      "load_window_seconds": 30.00080679100938,
+      "drain_seconds": 0.06442720899940468,
+      "client_cpu_seconds": 0.4608780000000001,
+      "committed_rows": 5400,
+      "successful_transactions": 54,
+      "attempted_rows": 5400,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 5412,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 179.60944524823663,
+      "transactions_per_second": 1.796094452482366,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 548.6364567784929,
+        "p50": 507.7657494985033,
+        "p95": 897.2441869598697,
+        "p99": 971.4417567697818,
+        "max": 1009.8714159976225
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 68,
+      "retained_snapshot_delta": 54,
+      "retained_snapshots_per_second": 1.796094452482366,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289181,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 12137255,
+          "objects": 1841,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b100-c1-r3",
+      "connections": 1,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 1,
+        "batch_size": 100,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 30.64517070900183,
+      "load_window_seconds": 30.000410375010688,
+      "drain_seconds": 0.6447603339911439,
+      "client_cpu_seconds": 0.47639499999999924,
+      "committed_rows": 5300,
+      "successful_transactions": 53,
+      "attempted_rows": 5300,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 5312,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 172.94731526632214,
+      "transactions_per_second": 1.7294731526632212,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 569.9188804725088,
+        "p50": 533.2021669892129,
+        "p95": 791.5757914131973,
+        "p99": 952.4452316702806,
+        "max": 1015.4502079822123
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 67,
+      "retained_snapshot_delta": 53,
+      "retained_snapshots_per_second": 1.7294731526632212,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289164,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 11905898,
+          "objects": 1810,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b100-c2-r1",
+      "connections": 2,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 100,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 31.173439875012264,
+      "load_window_seconds": 30.00164262499311,
+      "drain_seconds": 1.1717972500191536,
+      "client_cpu_seconds": 0.5509640000000005,
+      "committed_rows": 7700,
+      "successful_transactions": 77,
+      "attempted_rows": 7700,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 7712,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 247.0051438298954,
+      "transactions_per_second": 2.470051438298954,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 792.9758788192306,
+        "p50": 674.118750001071,
+        "p95": 1492.788100009784,
+        "p99": 1705.1891000836617,
+        "max": 1787.069917016197
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 91,
+      "retained_snapshot_delta": 77,
+      "retained_snapshots_per_second": 2.470051438298954,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289173,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 17745470,
+          "objects": 2606,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b100-c2-r2",
+      "connections": 2,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 100,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 31.351278332993388,
+      "load_window_seconds": 30.001198540994665,
+      "drain_seconds": 1.3500797919987235,
+      "client_cpu_seconds": 0.6389269999999998,
+      "committed_rows": 7700,
+      "successful_transactions": 77,
+      "attempted_rows": 7700,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 7712,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 245.6040202959345,
+      "transactions_per_second": 2.456040202959345,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 796.3294285608837,
+        "p50": 652.2428329917602,
+        "p95": 1495.8840420062188,
+        "p99": 1607.6856031734496,
+        "max": 1621.0189170087688
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 91,
+      "retained_snapshot_delta": 77,
+      "retained_snapshots_per_second": 2.456040202959345,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289210,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 17745676,
+          "objects": 2606,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b100-c2-r3",
+      "connections": 2,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 100,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 31.477208500000415,
+      "load_window_seconds": 30.00120504197548,
+      "drain_seconds": 1.476003458024934,
+      "client_cpu_seconds": 0.6566159999999996,
+      "committed_rows": 7600,
+      "successful_transactions": 76,
+      "attempted_rows": 7600,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 7612,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 241.44453597274673,
+      "transactions_per_second": 2.4144453597274675,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 809.7435048448939,
+        "p50": 651.6802920086775,
+        "p95": 1562.3767395081813,
+        "p99": 2380.569208013185,
+        "max": 2529.0789580030832
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 90,
+      "retained_snapshot_delta": 76,
+      "retained_snapshots_per_second": 2.4144453597274675,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289169,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 17495270,
+          "objects": 2574,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "b100-c4-r1",
+      "connections": 4,
+      "batch_size": 100,
+      "valid": false,
+      "resume_session": 1,
+      "config": {
+        "connections": 4,
+        "batch_size": 100,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 1.7299700420117006,
+      "load_window_seconds": 0.04884883400518447,
+      "drain_seconds": 1.681121208006516,
+      "client_cpu_seconds": 0.020622999999999614,
+      "committed_rows": 200,
+      "successful_transactions": 2,
+      "attempted_rows": 400,
+      "errors": {
+        "statement:53400": 1,
+        "statement:40P01": 1
+      },
+      "failed_statements": 2,
+      "row_count_before": 12,
+      "row_count_after": 212,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 115.60893838799048,
+      "transactions_per_second": 1.156089383879905,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 1159.3335834913887,
+        "p50": 1159.3335834913887,
+        "p95": 1666.1088086577365,
+        "p99": 1711.1554953391897,
+        "max": 1722.417167009553
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 16,
+      "retained_snapshot_delta": 2,
+      "retained_snapshots_per_second": 1.156089383879905,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289116,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 877498,
+          "objects": 151,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "skipped",
+      "connections": 8,
+      "batch_size": 100,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "skipped",
+      "connections": 16,
+      "batch_size": 100,
+      "skipped": true,
+      "reason": "lower concurrency failed for this batch"
+    },
+    {
+      "label": "confirm-b100-c2",
+      "connections": 2,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 100,
+        "duration": 120.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 120.67515116700088,
+      "load_window_seconds": 120.00117583299289,
+      "drain_seconds": 0.6739753340079915,
+      "client_cpu_seconds": 2.4775600000000004,
+      "committed_rows": 29900,
+      "successful_transactions": 299,
+      "attempted_rows": 29900,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 29912,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 247.77263347797057,
+      "transactions_per_second": 2.477726334779706,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 797.1580638369174,
+        "p50": 658.8012079882901,
+        "p95": 1610.7934792118615,
+        "p99": 2115.560678665641,
+        "max": 2526.3474580133334
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 313,
+      "retained_snapshot_delta": 299,
+      "retained_snapshots_per_second": 2.477726334779706,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289204,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 88531563,
+          "objects": 10038,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "confirm-b100-c1",
+      "connections": 1,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 1,
+      "config": {
+        "connections": 1,
+        "batch_size": 100,
+        "duration": 120.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 120.16928400000324,
+      "load_window_seconds": 120.00069104199065,
+      "drain_seconds": 0.16859295801259577,
+      "client_cpu_seconds": 1.7935590000000001,
+      "committed_rows": 19700,
+      "successful_transactions": 197,
+      "attempted_rows": 19700,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 19712,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 163.93540299365907,
+      "transactions_per_second": 1.6393540299365907,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 601.3633548624832,
+        "p50": 539.9459580075927,
+        "p95": 1027.9538332019,
+        "p99": 1179.1558163671277,
+        "max": 1317.8344589832705
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 211,
+      "retained_snapshot_delta": 197,
+      "retained_snapshots_per_second": 1.6393540299365907,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 288964,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 52367519,
+          "objects": 6611,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "sustained",
+      "connections": 2,
+      "batch_size": 100,
+      "valid": false,
+      "resume_session": 1,
+      "config": {
+        "connections": 2,
+        "batch_size": 100,
+        "duration": 600.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 598.299612458999,
+      "load_window_seconds": 596.2010276670044,
+      "drain_seconds": 2.0985847919946536,
+      "client_cpu_seconds": 9.083936999999999,
+      "committed_rows": 97600,
+      "successful_transactions": 976,
+      "attempted_rows": 97700,
+      "errors": {
+        "statement:40P01": 1
+      },
+      "failed_statements": 1,
+      "row_count_before": 12,
+      "row_count_after": 97612,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 163.12897078249142,
+      "transactions_per_second": 1.6312897078249142,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 1211.5922775333647,
+        "p50": 991.9758329924662,
+        "p95": 2548.0672917619813,
+        "p99": 3230.3306040121242,
+        "max": 5389.903665985912
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 990,
+      "retained_snapshot_delta": 976,
+      "retained_snapshots_per_second": 1.6312897078249142,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289141,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 490218419,
+          "objects": 32679,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    },
+    {
+      "label": "sustained-b100-c1",
+      "connections": 1,
+      "batch_size": 100,
+      "valid": false,
+      "resume_session": 2,
+      "config": {
+        "connections": 1,
+        "batch_size": 100,
+        "duration": 600.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 600.8117004169908,
+      "load_window_seconds": 600.0012699170038,
+      "drain_seconds": 0.8104304999869782,
+      "client_cpu_seconds": 7.580228,
+      "committed_rows": 83200,
+      "successful_transactions": 832,
+      "attempted_rows": 83200,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 83212,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 138.47932712071918,
+      "transactions_per_second": 1.3847932712071918,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 713.0999986467172,
+        "p50": 684.9639374850085,
+        "p95": 1029.6560689006583,
+        "p99": 1307.240168217978,
+        "max": 4514.630749996286
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 849,
+      "retained_snapshot_delta": 835,
+      "retained_snapshots_per_second": 1.389786516175487,
+      "guard_errors": [],
+      "snapshots_reconciled": false,
+      "storage_before": [
+        {
+          "prefix": "aetherlake",
+          "size": 289157,
+          "objects": 52,
+          "status": "success",
+          "isVersions": false
+        }
+      ],
+      "storage_after": [
+        {
+          "prefix": "aetherlake",
+          "size": 412884923,
+          "objects": 28147,
+          "status": "success",
+          "isVersions": false
+        }
+      ]
+    }
+  ],
+  "interrupted_points_count": 1
+}
