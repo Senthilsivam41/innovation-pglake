@@ -30,7 +30,9 @@ are reused; only the interrupted point and remaining cells run. The runner check
 harness, image, Python/driver, Docker resource, PostgreSQL setting, and Compose
 contract compatibility before combining results. It backs up the manifest and
 records resume-session provenance. Interrupted points are retained separately and
-excluded from capacity results. Failed experiments cannot be retried as resumes.
+excluded from capacity results. A completed failed sustained trial can continue
+only to an untested configuration that already passed confirmation; its failed
+points remain unchanged. No failed configuration is retried.
 Record shared-host differences across sessions when interpreting the report.
 
 Before any writes, free space on MinIO `/data` must exceed the greater of 20 GiB
@@ -53,8 +55,9 @@ is a limitation: other running containers are not stopped or retuned.
    higher concurrency for that batch. Keep the failed result and PostgreSQL log
    tail. Capacity/monitor failures stop the experiment rather than escalating.
 5. Confirm the two fastest error-free cells for 120 seconds each, then run the
-   fastest surviving configuration for ten minutes. Record an unsuccessful
-   confirmation/sustained run as a finding; do not hide it behind automatic retries.
+   fastest surviving configuration for ten minutes. If it fails, retain that
+   result and test the other confirmed configuration once for ten minutes.
+   Record every unsuccessful confirmation/sustained run; do not retry failed points.
 
 `--smoke` uses two batches, two concurrency levels, one three-second repetition,
 and no sustained phase. Its numbers are runner verification only.

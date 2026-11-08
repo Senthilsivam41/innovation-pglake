@@ -71,18 +71,27 @@ async def measure(args, compose, env):
 
 
 def resume_manifest(saved, current):
-    if saved.get("complete") or not saved.get("interrupted"):
-        raise ValueError("Only an interrupted experiment can resume; failed results must not be retried")
+    attempted = {(p["config"]["connections"], p["config"]["batch_size"]) for p in saved["points"]
+                 if p["label"].startswith("sustained") and not p.get("interrupted")}
+    alternate = any(p["label"].startswith("confirm-") and p.get("valid") and
+                    (p["config"]["connections"], p["config"]["batch_size"]) not in attempted for p in saved["points"])
+    fallback = saved.get("complete") and saved.get("sustained_valid") is False and not saved.get("experiment_error") and alternate
+    if not saved.get("interrupted") and not fallback:
+        raise ValueError("Resume needs an interruption or an untested confirmed alternative; failed points are never retried")
+    if saved.get("complete") and not fallback:
+        raise ValueError("Experiment is already complete")
     for key in ("smoke", "docker", "images", "python", "asyncpg", "docker_context", "write_role"):
         if saved.get(key) != current.get(key):
             raise ValueError(f"Resume environment changed: {key}; start a separate experiment")
     if saved["source_hashes"]["load_test.py"] != current["source_hashes"]["load_test.py"]:
         raise ValueError("Measurement harness changed; start a separate experiment")
     current["previous_interruption_reason"] = saved.pop("interruption_reason", None)
+    current["continuation_reason"] = "untested confirmed alternative after sustained failure" if fallback else "user interruption"
     saved.setdefault("resume_sessions", []).append(current)
     saved.setdefault("interrupted_points", []).extend(p for p in saved["points"] if p.get("interrupted"))
     saved["points"] = [p for p in saved["points"] if not p.get("interrupted")]
     saved["interrupted"] = False
+    saved["complete"] = False
     return saved
 
 
@@ -256,8 +265,13 @@ def main():
                     finalists.append((p["rows_per_second"], connections, batch))
             if not finalists:
                 raise RuntimeError("No error-free configuration survived confirmation")
-            _, connections, batch = max(finalists)
-            manifest["sustained_valid"] = point("sustained", connections, batch, 600)["valid"]
+            manifest["sustained_valid"] = False
+            for index, (_, connections, batch) in enumerate(sorted(finalists, reverse=True)):
+                label = "sustained" if index == 0 else f"sustained-b{batch}-c{connections}"
+                manifest["sustained_label"] = label
+                if point(label, connections, batch, 600)["valid"]:
+                    manifest["sustained_valid"] = True
+                    break
         manifest["complete"] = True
     except Exception as exc:
         manifest["experiment_error"] = str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__

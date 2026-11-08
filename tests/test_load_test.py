@@ -39,6 +39,16 @@ class LoadTest(unittest.IsolatedAsyncioTestCase):
                 matrix.resume_manifest(copy.deepcopy(saved), current | mutation)
         with self.assertRaises(ValueError):
             matrix.resume_manifest(saved | dict(complete=True), current)
+        failed = saved | dict(complete=True, interrupted=False, sustained_valid=False,
+            points=[dict(label="sustained", valid=False, config=dict(connections=2, batch_size=100)),
+                    dict(label="confirm-b100-c1", valid=True, config=dict(connections=1, batch_size=100))])
+        continued = matrix.resume_manifest(copy.deepcopy(failed), copy.deepcopy(current))
+        self.assertEqual(continued["points"], failed["points"])
+        self.assertFalse(continued["complete"])
+        exhausted = failed | dict(points=failed["points"] + [dict(label="sustained-b100-c1", valid=False,
+                              config=dict(connections=1, batch_size=100))])
+        with self.assertRaises(ValueError):
+            matrix.resume_manifest(exhausted, current)
 
     async def test_accounting_and_failures(self):
         for scenario in ("success", "statement", "connect", "drain", "target", "reconcile", "worker"):
