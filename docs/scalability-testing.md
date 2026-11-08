@@ -62,8 +62,11 @@ is a limitation: other running containers are not stopped or retuned.
 `--smoke` uses two batches, two concurrency levels, one three-second repetition,
 and no sustained phase. Its numbers are runner verification only.
 
-Cron jobs are paused only in each disposable stack. An already-running scheduled
-job invalidates that repetition. This isolates foreground writes; production
+Cron jobs and native Iceberg autovacuum are paused only in each disposable stack.
+The runner verifies `autovacuum_enabled=false` on both Iceberg tables and records
+their options. Native autovacuum runs independently of cron; pausing cron alone
+does not isolate a ten-minute experiment. An already-running scheduled job
+invalidates that repetition. This isolates foreground writes; production
 maintenance contention and retention behavior require a separate staging test.
 
 ## Interpret results

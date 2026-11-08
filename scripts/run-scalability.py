@@ -80,7 +80,7 @@ def resume_manifest(saved, current):
         raise ValueError("Resume needs an interruption or an untested confirmed alternative; failed points are never retried")
     if saved.get("complete") and not fallback:
         raise ValueError("Experiment is already complete")
-    for key in ("smoke", "docker", "images", "python", "asyncpg", "docker_context", "write_role"):
+    for key in ("smoke", "docker", "images", "python", "asyncpg", "docker_context", "write_role", "maintenance"):
         if saved.get(key) != current.get(key):
             raise ValueError(f"Resume environment changed: {key}; start a separate experiment")
     if saved["source_hashes"]["load_test.py"] != current["source_hashes"]["load_test.py"]:
@@ -122,7 +122,7 @@ def main():
                     source_dirty=bool(command(["git", "status", "--porcelain"], env)),
                     source_hashes={p: hashlib.sha256((ROOT/p).read_bytes()).hexdigest()
                                    for p in ("load_test.py", "scripts/run-scalability.py")},
-                    host=platform.platform(), maintenance="cron jobs paused in disposable stack",
+                    host=platform.platform(), maintenance="cron jobs and native Iceberg autovacuum paused in disposable stack",
                     payload_size=1024, tenants=1000, points=[])
     info = json.loads(command(["docker", "info", "--format", "{{json .}}"], env))
     manifest["docker"] = {k: info[k] for k in ("NCPU", "MemTotal", "ServerVersion", "Architecture")}
@@ -189,6 +189,14 @@ def main():
             sql("UPDATE cron.job SET active=false")
             if sql("SELECT count(*) FROM cron.job_run_details WHERE status='running'") != "0":
                 raise RuntimeError("Scheduled maintenance already running; discard this repetition")
+            sql("ALTER FOREIGN TABLE aetherlake.events OPTIONS (ADD autovacuum_enabled 'false'); "
+                "ALTER FOREIGN TABLE aetherlake.event_history OPTIONS (ADD autovacuum_enabled 'false')")
+            maintenance = json.loads(sql("SELECT json_object_agg(c.relname,f.ftoptions) FROM pg_foreign_table f "
+                "JOIN pg_class c ON c.oid=f.ftrelid WHERE f.ftrelid IN "
+                "('aetherlake.events'::regclass,'aetherlake.event_history'::regclass)"))
+            if not all("autovacuum_enabled=false" in maintenance.get(table, []) for table in ("events", "event_history")):
+                raise RuntimeError("Native Iceberg autovacuum was not paused")
+            manifest["maintenance_options"] = maintenance
             settings = json.loads(sql("SELECT json_object_agg(name,json_build_object('value',setting,'unit',unit)) FROM pg_settings WHERE name IN "
                 "('server_version','max_connections','max_worker_processes','max_parallel_workers','shared_buffers','work_mem')"))
             if manifest.get("postgres_settings", settings) != settings:
