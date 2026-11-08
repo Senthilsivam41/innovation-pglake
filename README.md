@@ -38,6 +38,8 @@ docker compose up -d --build
 
 For reproducible write-path measurements, follow the [SCAL-01 runbook](docs/scalability-testing.md).
 It uses disposable volumes, capacity guards, reconciled row/snapshot counts, and an error-aware batch/concurrency matrix.
+The [measured SCAL-01 report](docs/scalability-report.md) includes the throughput curve,
+ten-minute result, failure boundary, and raw measurement exports.
 
 ## Architecture
 
@@ -207,7 +209,7 @@ Self-hosted open-source pg_lake does not itself expose an Iceberg REST catalog, 
 
 ## Maintenance and recovery
 
-`pg_cron` runs `VACUUM (ICEBERG)` hourly by default. Vacuum compacts small files and reclaims expired metadata/data according to pg_lake’s retention behavior. Tune snapshot age for recovery objectives before production; immediate expiration removes useful recovery history.
+`pg_cron` runs `VACUUM (ICEBERG)` hourly by default. Separately, native pg_lake Iceberg autovacuum runs every ten minutes unless disabled per table. Vacuum compacts small files and reclaims expired metadata/data according to pg_lake’s retention behavior. Tune snapshot age for recovery objectives before production; immediate expiration removes useful recovery history.
 
 Production deployments must additionally provide:
 

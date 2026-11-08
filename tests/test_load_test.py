@@ -34,7 +34,7 @@ class LoadTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resumed["interrupted_points"], saved["points"][2:])
         self.assertFalse(resumed["interrupted"])
         self.assertEqual(len(resumed["resume_sessions"]), 1)
-        for mutation in (dict(source_hashes={"load_test.py": "changed"}), dict(smoke=True)):
+        for mutation in (dict(source_hashes={"load_test.py": "changed"}), dict(smoke=True), dict(maintenance="changed")):
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 matrix.resume_manifest(copy.deepcopy(saved), current | mutation)
         with self.assertRaises(ValueError):

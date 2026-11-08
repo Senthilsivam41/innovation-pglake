@@ -1,0 +1,1267 @@
+{
+  "run_id": "20261108T111021Z-4ff0d777",
+  "smoke": false,
+  "complete": true,
+  "source_commit": "3115d87a2bdfe9f76f84b1007a1a28d9286c4e36",
+  "source_dirty": false,
+  "source_hashes": {
+    "load_test.py": "6c0bda365bf3b309effca45cd4561f3160d6ab02a040233ecb804d34ced801e6",
+    "scripts/run-scalability.py": "3202fa2931bdde2817dd93c113a317e38cac9e48048ada518e540c3716e17f3e"
+  },
+  "host": "macOS-26.7.1-arm64-arm-64bit",
+  "maintenance": "cron jobs and native Iceberg autovacuum paused in disposable stack",
+  "payload_size": 1024,
+  "tenants": 1000,
+  "docker": {
+    "NCPU": 14,
+    "MemTotal": 8318976000,
+    "ServerVersion": "29.9.2",
+    "Architecture": "aarch64"
+  },
+  "other_running_containers": 23,
+  "images": [
+    {
+      "id": "sha256:2ae017368598526df571e6de27ae059763e44507c3fd2353d812e9830d05c938",
+      "digests": [
+        "aetherlake/postgres@sha256:2ae017368598526df571e6de27ae059763e44507c3fd2353d812e9830d05c938"
+      ],
+      "architecture": "arm64"
+    },
+    {
+      "id": "sha256:851eae300839b0ebd1327fce4a2acb4f76b42cbd243a93659ebaf08a19ca4797",
+      "digests": [
+        "aetherlake/pgduck@sha256:851eae300839b0ebd1327fce4a2acb4f76b42cbd243a93659ebaf08a19ca4797"
+      ],
+      "architecture": "arm64"
+    },
+    {
+      "id": "sha256:e6c282005f6c8496256f8fd07e9a8b82073344c217ea87436d9af888db67eb0e",
+      "digests": [
+        "netiedge/minio@sha256:e6c282005f6c8496256f8fd07e9a8b82073344c217ea87436d9af888db67eb0e"
+      ],
+      "architecture": "arm64"
+    }
+  ],
+  "python": "3.12.13",
+  "asyncpg": "0.32.0",
+  "docker_context": "desktop-linux",
+  "write_role": "aetherlake_admin",
+  "maintenance_options": {
+    "events": [
+      "partition_by=day(event_time), bucket(32, tenant_id)",
+      "out_of_range_values=error",
+      "max_snapshot_age=86400",
+      "catalog=postgres",
+      "location=s3://aetherlake/warehouse/aetherlake/aetherlake/events/17555",
+      "autovacuum_enabled=false"
+    ],
+    "event_history": [
+      "partition_by=day(event_time), bucket(32, tenant_id)",
+      "out_of_range_values=error",
+      "max_snapshot_age=604800",
+      "catalog=postgres",
+      "location=s3://aetherlake/warehouse/aetherlake/aetherlake/event_history/17569",
+      "autovacuum_enabled=false"
+    ]
+  },
+  "postgres_settings": {
+    "max_connections": {
+      "value": "100",
+      "unit": null
+    },
+    "max_parallel_workers": {
+      "value": "8",
+      "unit": null
+    },
+    "max_worker_processes": {
+      "value": "8",
+      "unit": null
+    },
+    "server_version": {
+      "value": "18.1",
+      "unit": null
+    },
+    "shared_buffers": {
+      "value": "16384",
+      "unit": "8kB"
+    },
+    "work_mem": {
+      "value": "4096",
+      "unit": "kB"
+    }
+  },
+  "extensions": [
+    {
+      "extname": "plpgsql",
+      "extversion": "1.0"
+    },
+    {
+      "extname": "pg_extension_base",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_map",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_lake_engine",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_lake_iceberg",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "btree_gist",
+      "extversion": "1.8"
+    },
+    {
+      "extname": "pg_lake_table",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_lake_copy",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_lake",
+      "extversion": "3.4"
+    },
+    {
+      "extname": "pg_cron",
+      "extversion": "1.6"
+    }
+  ],
+  "iceberg_contract": {
+    "format_version": 2,
+    "schemas": [
+      {
+        "type": "struct",
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "type": "uuid",
+            "required": true
+          },
+          {
+            "id": 2,
+            "name": "tenant_id",
+            "type": "long",
+            "required": true
+          },
+          {
+            "id": 3,
+            "name": "event_type",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 4,
+            "name": "event_time",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 5,
+            "name": "payload",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 6,
+            "name": "schema_version",
+            "type": "int",
+            "required": true,
+            "write-default": 1
+          },
+          {
+            "id": 7,
+            "name": "created_at",
+            "type": "timestamptz",
+            "required": true
+          }
+        ],
+        "schema-id": 0
+      },
+      {
+        "type": "struct",
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "type": "uuid",
+            "required": true
+          },
+          {
+            "id": 2,
+            "name": "tenant_id",
+            "type": "long",
+            "required": true
+          },
+          {
+            "id": 3,
+            "name": "event_type",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 4,
+            "name": "event_time",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 5,
+            "name": "payload",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 6,
+            "name": "schema_version",
+            "type": "int",
+            "required": true,
+            "write-default": 1
+          },
+          {
+            "id": 7,
+            "name": "created_at",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 8,
+            "name": "source",
+            "type": "string",
+            "required": false,
+            "write-default": "application",
+            "initial-default": "application"
+          }
+        ],
+        "schema-id": 1
+      },
+      {
+        "type": "struct",
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "type": "uuid",
+            "required": true
+          },
+          {
+            "id": 2,
+            "name": "tenant_id",
+            "type": "long",
+            "required": true
+          },
+          {
+            "id": 3,
+            "name": "event_type",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 4,
+            "name": "event_time",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 5,
+            "name": "payload",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 6,
+            "name": "schema_version",
+            "type": "int",
+            "required": true,
+            "write-default": 1
+          },
+          {
+            "id": 7,
+            "name": "created_at",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 8,
+            "name": "event_source",
+            "type": "string",
+            "required": false,
+            "write-default": "application",
+            "initial-default": "application"
+          }
+        ],
+        "schema-id": 2
+      },
+      {
+        "type": "struct",
+        "fields": [
+          {
+            "id": 1,
+            "name": "event_id",
+            "type": "uuid",
+            "required": true
+          },
+          {
+            "id": 2,
+            "name": "tenant_id",
+            "type": "long",
+            "required": true
+          },
+          {
+            "id": 3,
+            "name": "event_type",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 4,
+            "name": "event_time",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 5,
+            "name": "payload",
+            "type": "string",
+            "required": true
+          },
+          {
+            "id": 6,
+            "name": "schema_version",
+            "type": "int",
+            "required": true,
+            "write-default": 1
+          },
+          {
+            "id": 7,
+            "name": "created_at",
+            "type": "timestamptz",
+            "required": true
+          },
+          {
+            "id": 8,
+            "name": "event_source",
+            "type": "string",
+            "required": false,
+            "initial-default": "application"
+          }
+        ],
+        "schema-id": 3
+      }
+    ],
+    "partition_specs": [
+      {
+        "fields": [],
+        "spec-id": 0
+      },
+      {
+        "fields": [
+          {
+            "name": "event_time_day",
+            "field-id": 1000,
+            "source-id": 4,
+            "transform": "day",
+            "source-ids": [
+              4
+            ]
+          },
+          {
+            "name": "tenant_id_bucket_32",
+            "field-id": 1001,
+            "source-id": 2,
+            "transform": "bucket[32]",
+            "source-ids": [
+              2
+            ]
+          }
+        ],
+        "spec-id": 1
+      }
+    ]
+  },
+  "sustained_valid": true,
+  "sustained_label": "sustained",
+  "raw_manifest_sha256": "03d1c222c17d73a45cb563e85dcbdf186481ab5747c1e7195b20801a465412e6",
+  "raw_artifact_directory": ".aetherlake/load-tests/20261108T111021Z-4ff0d777",
+  "interrupted_points_count": 0,
+  "cells": [
+    {
+      "batch_size": 1,
+      "connections": 1,
+      "repetitions": 3,
+      "successful_repetitions": 3,
+      "accepted": true,
+      "skipped": false,
+      "median_rows_per_second": 8.567110743055931,
+      "min_rows_per_second": 8.550573788152686,
+      "max_rows_per_second": 8.71786614658672,
+      "median_run_p95_ms": 206.3698581652716,
+      "errors": {}
+    },
+    {
+      "batch_size": 1,
+      "connections": 2,
+      "repetitions": 1,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": false,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {
+        "statement:40P01": 1
+      }
+    },
+    {
+      "batch_size": 1,
+      "connections": 4,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    },
+    {
+      "batch_size": 1,
+      "connections": 8,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    },
+    {
+      "batch_size": 1,
+      "connections": 16,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    },
+    {
+      "batch_size": 10,
+      "connections": 1,
+      "repetitions": 3,
+      "successful_repetitions": 3,
+      "accepted": true,
+      "skipped": false,
+      "median_rows_per_second": 43.94991315245184,
+      "min_rows_per_second": 42.59430751669255,
+      "max_rows_per_second": 45.4565666670311,
+      "median_run_p95_ms": 371.5429312360357,
+      "errors": {}
+    },
+    {
+      "batch_size": 10,
+      "connections": 2,
+      "repetitions": 3,
+      "successful_repetitions": 3,
+      "accepted": true,
+      "skipped": false,
+      "median_rows_per_second": 52.582865060315335,
+      "min_rows_per_second": 52.0608080552269,
+      "max_rows_per_second": 52.59052136298437,
+      "median_run_p95_ms": 691.7073104559679,
+      "errors": {}
+    },
+    {
+      "batch_size": 10,
+      "connections": 4,
+      "repetitions": 1,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": false,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {
+        "statement:53400": 1,
+        "statement:40P01": 1
+      }
+    },
+    {
+      "batch_size": 10,
+      "connections": 8,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    },
+    {
+      "batch_size": 10,
+      "connections": 16,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    },
+    {
+      "batch_size": 50,
+      "connections": 1,
+      "repetitions": 3,
+      "successful_repetitions": 3,
+      "accepted": true,
+      "skipped": false,
+      "median_rows_per_second": 105.49749275331143,
+      "min_rows_per_second": 101.12929537024604,
+      "max_rows_per_second": 114.28168264365483,
+      "median_run_p95_ms": 693.6263501876965,
+      "errors": {}
+    },
+    {
+      "batch_size": 50,
+      "connections": 2,
+      "repetitions": 3,
+      "successful_repetitions": 3,
+      "accepted": true,
+      "skipped": false,
+      "median_rows_per_second": 139.97199857335033,
+      "min_rows_per_second": 139.86827310952685,
+      "max_rows_per_second": 141.19530033915453,
+      "median_run_p95_ms": 1310.9246413921935,
+      "errors": {}
+    },
+    {
+      "batch_size": 50,
+      "connections": 4,
+      "repetitions": 1,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": false,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {
+        "statement:40P01": 1,
+        "statement:53400": 1
+      }
+    },
+    {
+      "batch_size": 50,
+      "connections": 8,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    },
+    {
+      "batch_size": 50,
+      "connections": 16,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    },
+    {
+      "batch_size": 100,
+      "connections": 1,
+      "repetitions": 3,
+      "successful_repetitions": 3,
+      "accepted": true,
+      "skipped": false,
+      "median_rows_per_second": 188.67377912624707,
+      "min_rows_per_second": 186.40262941734264,
+      "max_rows_per_second": 192.95385046184882,
+      "median_run_p95_ms": 769.2721459898166,
+      "errors": {}
+    },
+    {
+      "batch_size": 100,
+      "connections": 2,
+      "repetitions": 3,
+      "successful_repetitions": 3,
+      "accepted": true,
+      "skipped": false,
+      "median_rows_per_second": 263.27477752762013,
+      "min_rows_per_second": 262.2582550022449,
+      "max_rows_per_second": 268.90274780740117,
+      "median_run_p95_ms": 1513.6851875140567,
+      "errors": {}
+    },
+    {
+      "batch_size": 100,
+      "connections": 4,
+      "repetitions": 1,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": false,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {
+        "statement:40P01": 1,
+        "statement:53400": 1
+      }
+    },
+    {
+      "batch_size": 100,
+      "connections": 8,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    },
+    {
+      "batch_size": 100,
+      "connections": 16,
+      "repetitions": 0,
+      "successful_repetitions": 0,
+      "accepted": false,
+      "skipped": true,
+      "median_rows_per_second": null,
+      "min_rows_per_second": null,
+      "max_rows_per_second": null,
+      "median_run_p95_ms": null,
+      "errors": {}
+    }
+  ],
+  "confirmations": [
+    {
+      "label": "confirm-b100-c2",
+      "connections": 2,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 0,
+      "config": {
+        "connections": 2,
+        "batch_size": 100,
+        "duration": 120.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 120.37030683300691,
+      "load_window_seconds": 120.00126570800785,
+      "drain_seconds": 0.3690411249990575,
+      "client_cpu_seconds": 3.1293450000000007,
+      "committed_rows": 34900,
+      "successful_transactions": 349,
+      "attempted_rows": 34900,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 34912,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 289.93861458223034,
+      "transactions_per_second": 2.899386145822304,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 680.5315615499544,
+        "p50": 548.8172080076765,
+        "p95": 1729.5771918084943,
+        "p99": 1951.4747780037567,
+        "max": 2171.5605000208598
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 363,
+      "retained_snapshot_delta": 349,
+      "retained_snapshots_per_second": 2.899386145822304,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "resources": {
+        "services": {
+          "minio": {
+            "cpu_percent_peak": 48.5,
+            "memory_bytes_peak": 453823692.8
+          },
+          "pgduck": {
+            "cpu_percent_peak": 104.22,
+            "memory_bytes_peak": 150994944.0
+          },
+          "postgres": {
+            "cpu_percent_peak": 118.72,
+            "memory_bytes_peak": 374446489.6
+          }
+        },
+        "minio_free_bytes_min": 418550886400,
+        "max_sampled_waiters": {
+          "IPC": 1,
+          "none reported": 1,
+          "Lock": 1,
+          "Extension": 2
+        }
+      },
+      "object_growth": 11662,
+      "byte_growth": 107923971
+    },
+    {
+      "label": "confirm-b100-c1",
+      "connections": 1,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 0,
+      "config": {
+        "connections": 1,
+        "batch_size": 100,
+        "duration": 120.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 120.75715258298442,
+      "load_window_seconds": 120.00073895798414,
+      "drain_seconds": 0.7564136250002775,
+      "client_cpu_seconds": 2.2004509999999993,
+      "committed_rows": 24000,
+      "successful_transactions": 240,
+      "attempted_rows": 24000,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 24012,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 198.7459913275711,
+      "transactions_per_second": 1.987459913275711,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 494.603486266836,
+        "p50": 446.27827100339346,
+        "p95": 877.4441562622087,
+        "p99": 1094.004055503174,
+        "max": 1123.8313330104575
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 254,
+      "retained_snapshot_delta": 240,
+      "retained_snapshots_per_second": 1.987459913275711,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "resources": {
+        "services": {
+          "minio": {
+            "cpu_percent_peak": 27.88,
+            "memory_bytes_peak": 431698739.2
+          },
+          "pgduck": {
+            "cpu_percent_peak": 67.72,
+            "memory_bytes_peak": 124361113.6
+          },
+          "postgres": {
+            "cpu_percent_peak": 77.19,
+            "memory_bytes_peak": 213909504.0
+          }
+        },
+        "minio_free_bytes_min": 418662117376,
+        "max_sampled_waiters": {
+          "Extension": 1,
+          "none reported": 1,
+          "IPC": 1
+        }
+      },
+      "object_growth": 8005,
+      "byte_growth": 66351146
+    }
+  ],
+  "sustained": {
+    "label": "sustained",
+    "connections": 2,
+    "batch_size": 100,
+    "valid": true,
+    "resume_session": 0,
+    "config": {
+      "connections": 2,
+      "batch_size": 100,
+      "duration": 600.0,
+      "total_inserts": null,
+      "payload_size": 1024,
+      "tenants": 1000,
+      "connect_timeout": 10,
+      "statement_timeout": 10,
+      "drain_timeout": 12
+    },
+    "elapsed_seconds": 601.852893000003,
+    "load_window_seconds": 600.0003415830142,
+    "drain_seconds": 1.8525514169887174,
+    "client_cpu_seconds": 12.123859,
+    "committed_rows": 131700,
+    "successful_transactions": 1317,
+    "attempted_rows": 131700,
+    "errors": {},
+    "failed_statements": 0,
+    "row_count_before": 12,
+    "row_count_after": 131712,
+    "rows_reconciled": true,
+    "target_met": true,
+    "rows_per_second": 218.82423683888373,
+    "transactions_per_second": 2.1882423683888375,
+    "latency_ms": {
+      "unit": "successful INSERT transaction",
+      "avg": 904.6953051615664,
+      "p50": 879.1702919988893,
+      "p95": 1509.753033408197,
+      "p99": 1893.2720785669514,
+      "max": 2277.063541987445
+    },
+    "retained_snapshots_before": 14,
+    "retained_snapshots_after": 1331,
+    "retained_snapshot_delta": 1317,
+    "retained_snapshots_per_second": 2.1882423683888375,
+    "guard_errors": [],
+    "snapshots_reconciled": true,
+    "resources": {
+      "services": {
+        "minio": {
+          "cpu_percent_peak": 55.37,
+          "memory_bytes_peak": 647285964.8
+        },
+        "pgduck": {
+          "cpu_percent_peak": 159.57,
+          "memory_bytes_peak": 443337932.8
+        },
+        "postgres": {
+          "cpu_percent_peak": 140.25,
+          "memory_bytes_peak": 1275605286.912
+        }
+      },
+      "minio_free_bytes_min": 416278556672,
+      "max_sampled_waiters": {
+        "IPC": 1,
+        "Extension": 2,
+        "none reported": 2,
+        "Lock": 1,
+        "Client": 1,
+        "IO": 1
+      }
+    },
+    "object_growth": 44006,
+    "byte_growth": 790808337
+  },
+  "sustained_trials": [
+    {
+      "label": "sustained",
+      "connections": 2,
+      "batch_size": 100,
+      "valid": true,
+      "resume_session": 0,
+      "config": {
+        "connections": 2,
+        "batch_size": 100,
+        "duration": 600.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 601.852893000003,
+      "load_window_seconds": 600.0003415830142,
+      "drain_seconds": 1.8525514169887174,
+      "client_cpu_seconds": 12.123859,
+      "committed_rows": 131700,
+      "successful_transactions": 1317,
+      "attempted_rows": 131700,
+      "errors": {},
+      "failed_statements": 0,
+      "row_count_before": 12,
+      "row_count_after": 131712,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 218.82423683888373,
+      "transactions_per_second": 2.1882423683888375,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 904.6953051615664,
+        "p50": 879.1702919988893,
+        "p95": 1509.753033408197,
+        "p99": 1893.2720785669514,
+        "max": 2277.063541987445
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 1331,
+      "retained_snapshot_delta": 1317,
+      "retained_snapshots_per_second": 2.1882423683888375,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "resources": {
+        "services": {
+          "minio": {
+            "cpu_percent_peak": 55.37,
+            "memory_bytes_peak": 647285964.8
+          },
+          "pgduck": {
+            "cpu_percent_peak": 159.57,
+            "memory_bytes_peak": 443337932.8
+          },
+          "postgres": {
+            "cpu_percent_peak": 140.25,
+            "memory_bytes_peak": 1275605286.912
+          }
+        },
+        "minio_free_bytes_min": 416278556672,
+        "max_sampled_waiters": {
+          "IPC": 1,
+          "Extension": 2,
+          "none reported": 2,
+          "Lock": 1,
+          "Client": 1,
+          "IO": 1
+        }
+      },
+      "object_growth": 44006,
+      "byte_growth": 790808337
+    }
+  ],
+  "resource_peaks_all_points": {
+    "services": {
+      "minio": {
+        "cpu_percent_peak": 93.07,
+        "memory_bytes_peak": 647285964.8
+      },
+      "pgduck": {
+        "cpu_percent_peak": 159.57,
+        "memory_bytes_peak": 443337932.8
+      },
+      "postgres": {
+        "cpu_percent_peak": 140.25,
+        "memory_bytes_peak": 1275605286.912
+      }
+    },
+    "minio_free_bytes_min": 416278556672,
+    "max_sampled_waiters": {
+      "Extension": 2,
+      "none reported": 2,
+      "IPC": 2,
+      "Lock": 1,
+      "Client": 1,
+      "IO": 1
+    }
+  },
+  "failures": [
+    {
+      "label": "b1-c2-r1",
+      "connections": 2,
+      "batch_size": 1,
+      "valid": false,
+      "resume_session": 0,
+      "config": {
+        "connections": 2,
+        "batch_size": 1,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 1.0922678750066552,
+      "load_window_seconds": 1.0300132920092437,
+      "drain_seconds": 0.06225458299741149,
+      "client_cpu_seconds": 0.003183000000000047,
+      "committed_rows": 1,
+      "successful_transactions": 1,
+      "attempted_rows": 2,
+      "errors": {
+        "statement:40P01": 1
+      },
+      "failed_statements": 1,
+      "row_count_before": 12,
+      "row_count_after": 13,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 0.9155263309322422,
+      "transactions_per_second": 0.9155263309322422,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 1091.8891249748413,
+        "p50": 1091.8891249748413,
+        "p95": 1091.8891249748413,
+        "p99": 1091.8891249748413,
+        "max": 1091.8891249748413
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 15,
+      "retained_snapshot_delta": 1,
+      "retained_snapshots_per_second": 0.9155263309322422,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "resources": {
+        "services": {
+          "minio": {
+            "cpu_percent_peak": 4.96,
+            "memory_bytes_peak": 298949017.6
+          },
+          "pgduck": {
+            "cpu_percent_peak": 5.91,
+            "memory_bytes_peak": 39300628.48
+          },
+          "postgres": {
+            "cpu_percent_peak": 5.51,
+            "memory_bytes_peak": 37916508.16
+          }
+        },
+        "minio_free_bytes_min": 418416427008,
+        "max_sampled_waiters": {}
+      },
+      "object_growth": 5,
+      "byte_growth": 31249
+    },
+    {
+      "label": "b10-c4-r1",
+      "connections": 4,
+      "batch_size": 10,
+      "valid": false,
+      "resume_session": 0,
+      "config": {
+        "connections": 4,
+        "batch_size": 10,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 1.1979599589831196,
+      "load_window_seconds": 0.007157209009164944,
+      "drain_seconds": 1.1908027499739546,
+      "client_cpu_seconds": 0.006108000000000224,
+      "committed_rows": 20,
+      "successful_transactions": 2,
+      "attempted_rows": 40,
+      "errors": {
+        "statement:53400": 1,
+        "statement:40P01": 1
+      },
+      "failed_statements": 2,
+      "row_count_before": 12,
+      "row_count_after": 32,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 16.695048820310213,
+      "transactions_per_second": 1.6695048820310212,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 665.8294994995231,
+        "p50": 665.8294994995231,
+        "p95": 1143.4757368595456,
+        "p99": 1185.9331801804365,
+        "max": 1196.5475410106592
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 16,
+      "retained_snapshot_delta": 2,
+      "retained_snapshots_per_second": 1.6695048820310212,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "resources": {
+        "services": {
+          "minio": {
+            "cpu_percent_peak": 0.79,
+            "memory_bytes_peak": 286366105.6
+          },
+          "pgduck": {
+            "cpu_percent_peak": 6.26,
+            "memory_bytes_peak": 23844618.24
+          },
+          "postgres": {
+            "cpu_percent_peak": 5.5,
+            "memory_bytes_peak": 37056675.84
+          }
+        },
+        "minio_free_bytes_min": 418623864832,
+        "max_sampled_waiters": {}
+      },
+      "object_growth": 28,
+      "byte_growth": 132285
+    },
+    {
+      "label": "b50-c4-r1",
+      "connections": 4,
+      "batch_size": 50,
+      "valid": false,
+      "resume_session": 0,
+      "config": {
+        "connections": 4,
+        "batch_size": 50,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 1.4558503339940216,
+      "load_window_seconds": 0.09479979198658839,
+      "drain_seconds": 1.3610505420074333,
+      "client_cpu_seconds": 0.012017000000000166,
+      "committed_rows": 100,
+      "successful_transactions": 2,
+      "attempted_rows": 200,
+      "errors": {
+        "statement:40P01": 1,
+        "statement:53400": 1
+      },
+      "failed_statements": 2,
+      "row_count_before": 12,
+      "row_count_after": 112,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 68.6883793374949,
+      "transactions_per_second": 1.373767586749898,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 920.831374503905,
+        "p50": 920.831374503905,
+        "p95": 1399.9668868491426,
+        "p99": 1442.5567101687193,
+        "max": 1453.2041659986135
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 16,
+      "retained_snapshot_delta": 2,
+      "retained_snapshots_per_second": 1.373767586749898,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "resources": {
+        "services": {
+          "minio": {
+            "cpu_percent_peak": 1.02,
+            "memory_bytes_peak": 291608985.6
+          },
+          "pgduck": {
+            "cpu_percent_peak": 5.81,
+            "memory_bytes_peak": 28405923.84
+          },
+          "postgres": {
+            "cpu_percent_peak": 5.62,
+            "memory_bytes_peak": 38231080.96
+          }
+        },
+        "minio_free_bytes_min": 418817445888,
+        "max_sampled_waiters": {}
+      },
+      "object_growth": 88,
+      "byte_growth": 407180
+    },
+    {
+      "label": "b100-c4-r1",
+      "connections": 4,
+      "batch_size": 100,
+      "valid": false,
+      "resume_session": 0,
+      "config": {
+        "connections": 4,
+        "batch_size": 100,
+        "duration": 30.0,
+        "total_inserts": null,
+        "payload_size": 1024,
+        "tenants": 1000,
+        "connect_timeout": 10,
+        "statement_timeout": 10,
+        "drain_timeout": 12
+      },
+      "elapsed_seconds": 1.4567459999816492,
+      "load_window_seconds": 0.03293699998175725,
+      "drain_seconds": 1.423808999999892,
+      "client_cpu_seconds": 0.019654999999998424,
+      "committed_rows": 200,
+      "successful_transactions": 2,
+      "attempted_rows": 400,
+      "errors": {
+        "statement:40P01": 1,
+        "statement:53400": 1
+      },
+      "failed_statements": 2,
+      "row_count_before": 12,
+      "row_count_after": 212,
+      "rows_reconciled": true,
+      "target_met": true,
+      "rows_per_second": 137.292293922564,
+      "transactions_per_second": 1.3729229392256401,
+      "latency_ms": {
+        "unit": "successful INSERT transaction",
+        "avg": 922.1424790011952,
+        "p50": 922.1424790011952,
+        "p95": 1389.9603603917058,
+        "p99": 1431.5441720708623,
+        "max": 1441.9401249906514
+      },
+      "retained_snapshots_before": 14,
+      "retained_snapshots_after": 16,
+      "retained_snapshot_delta": 2,
+      "retained_snapshots_per_second": 1.3729229392256401,
+      "guard_errors": [],
+      "snapshots_reconciled": true,
+      "resources": {
+        "services": {
+          "minio": {
+            "cpu_percent_peak": 1.13,
+            "memory_bytes_peak": 296642150.4
+          },
+          "pgduck": {
+            "cpu_percent_peak": 4.15,
+            "memory_bytes_peak": 27902607.36
+          },
+          "postgres": {
+            "cpu_percent_peak": 5.02,
+            "memory_bytes_peak": 37989908.48
+          }
+        },
+        "minio_free_bytes_min": 418953957376,
+        "max_sampled_waiters": {}
+      },
+      "object_growth": 99,
+      "byte_growth": 588310
+    }
+  ]
+}
