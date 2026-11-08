@@ -1,5 +1,6 @@
 """Deterministic accounting and deadline checks; no PostgreSQL required."""
 import asyncio
+import copy
 from contextlib import redirect_stderr
 import io
 import importlib.util
@@ -10,17 +11,34 @@ from unittest.mock import AsyncMock, patch
 import load_test as load
 from pathlib import Path
 
+spec = importlib.util.spec_from_file_location("matrix", Path(__file__).resolve().parents[1] / "scripts/run-scalability.py")
+matrix = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(matrix)
+
 
 class LoadTest(unittest.IsolatedAsyncioTestCase):
     async def test_capacity_guard_precedes_load(self):
-        spec = importlib.util.spec_from_file_location("matrix", Path(__file__).resolve().parents[1] / "scripts/run-scalability.py")
-        matrix = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(matrix)
         with patch.object(matrix, "command", side_effect=["container-id", "/dev/test 100000000 99000000 1000000 99% /data"]), \
              patch.object(load, "run", new_callable=AsyncMock) as run:
             with self.assertRaisesRegex(RuntimeError, "reserve"):
                 await matrix.measure(None, ["docker"], {})
             run.assert_not_awaited()
+
+    def test_resume_preserves_failures_and_rejects_changed_harness(self):
+        saved = dict(complete=False, interrupted=True, smoke=False, source_hashes={"load_test.py": "same"},
+                     points=[dict(label="passed", valid=True), dict(label="deadlock", valid=False, errors={"statement:40P01": 1}),
+                             dict(label="paused", valid=False, interrupted=True)])
+        current = dict(smoke=False, source_hashes={"load_test.py": "same"})
+        resumed = matrix.resume_manifest(copy.deepcopy(saved), copy.deepcopy(current))
+        self.assertEqual(resumed["points"], saved["points"][:2])
+        self.assertEqual(resumed["interrupted_points"], saved["points"][2:])
+        self.assertFalse(resumed["interrupted"])
+        self.assertEqual(len(resumed["resume_sessions"]), 1)
+        for mutation in (dict(source_hashes={"load_test.py": "changed"}), dict(smoke=True)):
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                matrix.resume_manifest(copy.deepcopy(saved), current | mutation)
+        with self.assertRaises(ValueError):
+            matrix.resume_manifest(saved | dict(complete=True), current)
 
     async def test_accounting_and_failures(self):
         for scenario in ("success", "statement", "connect", "drain", "target", "reconcile", "worker"):

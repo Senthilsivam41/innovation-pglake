@@ -70,14 +70,33 @@ async def measure(args, compose, env):
     return result
 
 
+def resume_manifest(saved, current):
+    if saved.get("complete") or not saved.get("interrupted"):
+        raise ValueError("Only an interrupted experiment can resume; failed results must not be retried")
+    for key in ("smoke", "docker", "images", "python", "asyncpg", "docker_context", "write_role"):
+        if saved.get(key) != current.get(key):
+            raise ValueError(f"Resume environment changed: {key}; start a separate experiment")
+    if saved["source_hashes"]["load_test.py"] != current["source_hashes"]["load_test.py"]:
+        raise ValueError("Measurement harness changed; start a separate experiment")
+    current["previous_interruption_reason"] = saved.pop("interruption_reason", None)
+    saved.setdefault("resume_sessions", []).append(current)
+    saved.setdefault("interrupted_points", []).extend(p for p in saved["points"] if p.get("interrupted"))
+    saved["points"] = [p for p in saved["points"] if not p.get("interrupted")]
+    saved["interrupted"] = False
+    return saved
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--smoke", action="store_true", help="Short runner verification, not a capacity result")
-    parser.add_argument("--output-dir", type=Path)
+    destination = parser.add_mutually_exclusive_group()
+    destination.add_argument("--output-dir", type=Path)
+    destination.add_argument("--resume", type=Path, help="Continue an interrupted run; retain completed and failed points")
     cli = parser.parse_args()
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
-    output = cli.output_dir or ROOT / ".aetherlake" / "load-tests" / run_id
-    output.mkdir(parents=True, exist_ok=False)
+    output = cli.resume or cli.output_dir or ROOT / ".aetherlake" / "load-tests" / run_id
+    if not cli.resume:
+        output.mkdir(parents=True, exist_ok=False)
     project = "aetherlake-scal-" + run_id.lower()
     env = dict(os.environ)
     # Let Compose parse the fixture, and prevent shell overrides from targeting another storage service.
@@ -107,10 +126,21 @@ def main():
     manifest["asyncpg"] = load.asyncpg.__version__
     manifest["docker_context"] = command(["docker", "context", "show"], env)
     manifest["write_role"] = pg_env["POSTGRES_USER"]
+    if cli.resume:
+        saved = json.loads((output / "manifest.json").read_text())
+        if command(["git", "diff", "--name-only", saved["source_commit"], "--",
+                    "docker-compose.yml", ".env.example", "docker"], env):
+            parser.error("Compose fixture or server contract changed; start a separate experiment")
+        try:
+            (output / f"manifest-before-resume-{run_id}.json").write_text(json.dumps(saved, indent=2) + "\n")
+            manifest = resume_manifest(saved, manifest)
+        except ValueError as exc:
+            parser.error(str(exc))
+    completed = {p["label"]: p for p in manifest["points"] if not p.get("skipped")}
 
     def save():
         (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-        fields = ["label", "connections", "batch_size", "valid", "skipped", "committed_rows", "successful_transactions",
+        fields = ["label", "resume_session", "connections", "batch_size", "valid", "skipped", "committed_rows", "successful_transactions",
                   "rows_per_second", "transactions_per_second", "p50_ms", "p95_ms", "p99_ms",
                   "retained_snapshots_per_second", "failed_statements", "errors", "runner_error"]
         with (output / "summary.csv").open("w", newline="") as file:
@@ -118,6 +148,7 @@ def main():
             writer.writeheader()
             for point in manifest["points"]:
                 row = {key: point.get(key) for key in fields}
+                row["resume_session"] = point.get("resume_session", 0)
                 row.update({f"p{n}_ms": point.get("latency_ms", {}).get(f"p{n}") for n in (50, 95, 99)})
                 row["errors"] = json.dumps(point.get("errors", {}), sort_keys=True)
                 writer.writerow(row)
@@ -133,16 +164,28 @@ def main():
         return [json.loads(line) for line in text.splitlines()]
 
     def point(label, connections, batch, duration, warmup=True):
+        if label in completed:
+            result = completed[label]
+            config = result.get("config", {})
+            if (config.get("connections"), config.get("batch_size"), config.get("duration")) != (connections, batch, duration):
+                raise RuntimeError(f"Saved configuration mismatch for {label}")
+            print(f"{label}: preserved saved result (valid={result['valid']})", flush=True)
+            return result
         print(f"{label}: connections={connections}, batch={batch}, duration={duration}s", flush=True)
-        result = dict(label=label, connections=connections, batch_size=batch, valid=False)
+        result = dict(label=label, connections=connections, batch_size=batch, valid=False,
+                      resume_session=len(manifest.get("resume_sessions", [])),
+                      config=dict(connections=connections, batch_size=batch, duration=duration))
         try:
             command(compose + ["up", "-d", "--no-build", "--wait", "--wait-timeout", "300", "postgres"], env, 330)
             sql("UPDATE cron.job SET active=false")
             if sql("SELECT count(*) FROM cron.job_run_details WHERE status='running'") != "0":
                 raise RuntimeError("Scheduled maintenance already running; discard this repetition")
-            if "postgres_settings" not in manifest:
-                manifest["postgres_settings"] = json.loads(sql("SELECT json_object_agg(name,json_build_object('value',setting,'unit',unit)) FROM pg_settings WHERE name IN "
-                    "('server_version','max_connections','max_worker_processes','max_parallel_workers','shared_buffers','work_mem')"))
+            settings = json.loads(sql("SELECT json_object_agg(name,json_build_object('value',setting,'unit',unit)) FROM pg_settings WHERE name IN "
+                "('server_version','max_connections','max_worker_processes','max_parallel_workers','shared_buffers','work_mem')"))
+            if manifest.get("postgres_settings", settings) != settings:
+                raise RuntimeError("PostgreSQL settings changed; start a separate experiment")
+            manifest["postgres_settings"] = settings
+            if "extensions" not in manifest:
                 manifest["extensions"] = json.loads(sql("SELECT json_agg(t) FROM (SELECT extname,extversion FROM pg_extension) t"))
                 manifest["iceberg_contract"] = json.loads(sql("SELECT json_build_object('format_version',m->'format-version',"
                     "'schemas',m->'schemas','partition_specs',m->'partition-specs') FROM (SELECT "
@@ -167,8 +210,11 @@ def main():
                 result["postgres_log_tail"] = command(compose + ["logs", "--no-color", "--tail", "80", "postgres"], env)
         except Exception as exc:
             result.update(valid=False, runner_error=str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__)
-            if isinstance(exc, RuntimeError) and "MinIO free space" in str(exc):
+            if isinstance(exc, RuntimeError) and ("MinIO free space" in str(exc) or "PostgreSQL settings changed" in str(exc)):
                 result["guard_errors"] = [str(exc)]
+        except KeyboardInterrupt:
+            result.update(valid=False, interrupted=True, runner_error="user_pause")
+            raise
         finally:
             manifest["points"].append(result)
             (output / f"{label}.json").write_text(json.dumps(result, indent=2) + "\n")
@@ -187,8 +233,10 @@ def main():
             stopped = False
             for connections in ([1, 2] if cli.smoke else [1, 2, 4, 8, 16]):
                 if stopped:
-                    manifest["points"].append(dict(label="skipped", connections=connections, batch_size=batch,
-                                                   skipped=True, reason="lower concurrency failed for this batch"))
+                    if not any(p.get("skipped") and p["connections"] == connections and p["batch_size"] == batch
+                               for p in manifest["points"]):
+                        manifest["points"].append(dict(label="skipped", connections=connections, batch_size=batch,
+                                                       skipped=True, reason="lower concurrency failed for this batch"))
                     save()
                     continue
                 repetitions = []
@@ -213,9 +261,13 @@ def main():
         manifest["complete"] = True
     except Exception as exc:
         manifest["experiment_error"] = str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__
+    except KeyboardInterrupt:
+        manifest.update(interrupted=True, interruption_reason="User interrupted the experiment")
     finally:
         save()
     print(f"Results: {output}", flush=True)
+    if manifest.get("interrupted"):
+        return 130
     return 0 if manifest["complete"] and (cli.smoke or manifest.get("sustained_valid")) else 1
 
 

@@ -23,6 +23,16 @@ or resets the existing demo. It removes only its own disposable stack and volume
 after each point. Synthetic test data is intentionally discarded; results remain
 under `.aetherlake/load-tests/<run-id>/` (or a new `--output-dir`).
 
+Ctrl-C saves an interrupted checkpoint and cleans up the current disposable stack.
+Continue it with `scripts/run-scalability.py --resume .aetherlake/load-tests/<run-id>`
+using the same Python environment. Completed results, including real failures,
+are reused; only the interrupted point and remaining cells run. The runner checks
+harness, image, Python/driver, Docker resource, PostgreSQL setting, and Compose
+contract compatibility before combining results. It backs up the manifest and
+records resume-session provenance. Interrupted points are retained separately and
+excluded from capacity results. Failed experiments cannot be retried as resumes.
+Record shared-host differences across sessions when interpreting the report.
+
 Before any writes, free space on MinIO `/data` must exceed the greater of 20 GiB
 or 20% of its filesystem. The same guard is sampled during the load. The manifest
 records image IDs, architecture, Docker CPU/memory capacity, existing container
